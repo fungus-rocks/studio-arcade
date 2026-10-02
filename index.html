@@ -1,0 +1,1375 @@
+<title>Studio Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a hardware "console" — a hub of four game cabinets, each opening into a single stage panel with transport, display and controls. Single dark look by design (studio gear at night). */
+:root {
+  color-scheme: dark;
+  --bg: #17121e;        /* console body */
+  --panel: #221a2c;     /* module faceplate */
+  --panel-2: #2d2339;   /* raised control */
+  --line: #3e3150;      /* panel seams */
+  --ink: #f4ecdf;       /* silkscreen cream */
+  --muted: #a898b9;
+  --amber: #ffb547;     /* VU-lamp accent */
+  --amber-ink: #2a1a05;
+  --teal: #4fd8c2;      /* correct / signal */
+  --coral: #ff6d5f;     /* wrong / clip */
+  --violet: #a88bff;    /* EQ curve */
+  --pink: #ff93c9;
+  --sky: #7cc6ff;
+  --f-display: "Bungee", "Arial Black", Impact, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.5 var(--f-body);
+  padding-inline: 16px; padding-block: 0 48px;
+  background-image: radial-gradient(1200px 500px at 50% -200px, #2a1f38 0%, transparent 70%);
+}
+.wrap { max-width: 1040px; margin: 0 auto; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font: 600 11px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+/* ---------- top bar ---------- */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 18px; }
+.logo { display: flex; align-items: center; gap: 10px; font: 22px/1 var(--f-display); letter-spacing: .02em; background: none; border: 0; padding: 0; }
+.logo .vu { display: inline-flex; gap: 2px; align-items: flex-end; height: 22px; }
+.logo .vu i { width: 4px; border-radius: 1px; background: var(--amber); animation: vu 1.2s ease-in-out infinite alternate; }
+.logo .vu i:nth-child(1) { height: 40%; animation-delay: -.2s; }
+.logo .vu i:nth-child(2) { height: 80%; animation-delay: -.6s; }
+.logo .vu i:nth-child(3) { height: 60%; animation-delay: -.9s; background: var(--teal); }
+.logo .vu i:nth-child(4) { height: 95%; animation-delay: -.4s; background: var(--coral); }
+@keyframes vu { from { transform: scaleY(.45); } to { transform: scaleY(1); } }
+.logo .vu i { transform-origin: bottom; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font: 600 13px/1 var(--f-mono); }
+.pill .star { color: var(--amber); }
+
+/* ---------- hub ---------- */
+.hero { padding-block: 28px 26px; display: grid; gap: 10px; max-width: 680px; }
+.hero h1 { font: clamp(30px, 6vw, 52px)/1.02 var(--f-display); letter-spacing: .01em; }
+.hero h1 em { font-style: normal; color: var(--amber); }
+.hero p { margin: 0; color: var(--muted); font-size: 17px; max-width: 58ch; }
+.hero .tip { font: 12px/1.4 var(--f-mono); color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.hero .tip b { color: var(--teal); font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.card { position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; text-align: left; overflow: hidden; transition: transform .15s, border-color .15s; }
+.card:hover { transform: translateY(-2px); border-color: var(--hue, var(--amber)); }
+.card h2 { font: 21px/1.1 var(--f-display); color: var(--hue, var(--amber)); }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.card .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 600 12px/1 var(--f-mono); }
+.card canvas { position: absolute; inset: auto 0 0 0; width: 100%; height: 60px; opacity: .18; pointer-events: none; }
+.levels-dots { display: flex; gap: 4px; }
+.levels-dots i { width: 9px; height: 9px; border-radius: 2px; background: var(--line); }
+.levels-dots i.s1 { background: color-mix(in srgb, var(--amber) 45%, var(--line)); }
+.levels-dots i.s2 { background: color-mix(in srgb, var(--amber) 75%, var(--line)); }
+.levels-dots i.s3 { background: var(--amber); }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); font-weight: 600; font-size: 14px; transition: background .12s, border-color .12s, transform .08s; }
+.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary { background: var(--amber); border-color: var(--amber); color: var(--amber-ink); }
+.btn.primary:hover:not(:disabled) { background: #ffc46e; }
+.btn.ghost { background: transparent; }
+.btn.playing { border-color: var(--teal); color: var(--teal); }
+.btn:disabled { opacity: .45; }
+.btn kbd { font: 600 10px/1 var(--f-mono); padding: 3px 5px; border-radius: 4px; border: 1px solid currentColor; opacity: .6; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.seg button { border: 0; background: transparent; padding: 8px 14px; min-height: 38px; font: 600 13px/1 var(--f-body); color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); box-shadow: inset 0 -2px 0 var(--amber); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.spacer { flex: 1; }
+
+/* ---------- game shell ---------- */
+.game-head { display: grid; gap: 14px; padding-block: 10px 18px; }
+.game-title { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.game-title h1 { font: clamp(24px, 4.5vw, 34px)/1 var(--f-display); color: var(--hue, var(--amber)); }
+.lvls { display: flex; gap: 8px; flex-wrap: wrap; }
+.lvl { display: grid; gap: 3px; justify-items: start; padding: 8px 12px; min-width: 92px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); text-align: left; }
+.lvl .n { font: 600 11px/1 var(--f-mono); color: var(--muted); letter-spacing: .08em; }
+.lvl .t { font-size: 13px; font-weight: 600; line-height: 1.15; }
+.lvl[aria-current="true"] { border-color: var(--hue, var(--amber)); background: var(--panel-2); }
+.lvl:disabled .t::before { content: "🔒︎ "; }
+.stars { font-size: 13px; letter-spacing: 1px; color: var(--line); white-space: nowrap; }
+.stars b { color: var(--amber); font-weight: 400; }
+.stage { display: grid; gap: 14px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.brief { color: var(--muted); margin: 0; max-width: 62ch; }
+.brief b { color: var(--ink); }
+.hud { display: flex; gap: 18px; flex-wrap: wrap; font: 600 13px/1 var(--f-mono); color: var(--muted); }
+.hud b { color: var(--ink); font-size: 16px; }
+.hud .streak b { color: var(--amber); }
+.progress { display: flex; gap: 4px; }
+.progress i { width: 18px; height: 6px; border-radius: 3px; background: var(--line); }
+.progress i.ok { background: var(--teal); }
+.progress i.bad { background: var(--coral); }
+.progress i.now { background: var(--muted); }
+
+/* feedback strip */
+.feedback { display: grid; gap: 10px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); }
+.feedback.ok { border-color: color-mix(in srgb, var(--teal) 60%, var(--line)); }
+.feedback.bad { border-color: color-mix(in srgb, var(--coral) 60%, var(--line)); }
+.feedback h3 { font: 18px/1.1 var(--f-display); }
+.feedback.ok h3 { color: var(--teal); }
+.feedback.bad h3 { color: var(--coral); }
+.feedback p { margin: 0; color: var(--muted); max-width: 70ch; }
+.feedback p b { color: var(--ink); }
+</style>
+<style>
+/* ---------- EQ: Frequency Hunter ---------- */
+.eqview { width: 100%; height: 200px; display: block; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+.ans { display: grid; gap: 2px; justify-items: center; padding: 10px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); }
+.ans .hz { font: 600 17px/1 var(--f-mono); }
+.ans .tag { font-size: 11px; color: var(--muted); text-transform: lowercase; }
+.ans .key { font: 10px/1 var(--f-mono); color: var(--muted); opacity: .7; }
+.ans:hover:not(:disabled) { border-color: var(--amber); }
+.ans.correct { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 18%, var(--panel-2)); }
+.ans.wrong { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 18%, var(--panel-2)); }
+.ans:disabled:not(.correct):not(.wrong) { opacity: .45; }
+
+/* ---------- Beat Copy ---------- */
+.gridwrap { overflow-x: auto; padding-bottom: 4px; }
+.bgrid { display: grid; grid-template-columns: 138px repeat(16, minmax(24px, 1fr)); gap: 4px; min-width: 580px; align-items: center; }
+.bgrid .stepno { font: 10px/1 var(--f-mono); color: var(--muted); text-align: center; padding-bottom: 2px; }
+.bgrid .stepno.beat { color: var(--ink); font-weight: 600; }
+.bgrid .stepno.now { color: var(--amber); }
+.rlabel { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; min-width: 0; }
+.rlabel .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.rlabel .solo { margin-left: auto; font: 600 10px/1 var(--f-mono); padding: 4px 5px; border-radius: 4px; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+.rlabel .solo[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.rlabel .rs { font: 600 10px/1 var(--f-mono); }
+.rlabel .rs.ok { color: var(--teal); } .rlabel .rs.bad { color: var(--coral); }
+.cell { aspect-ratio: 1; min-height: 24px; border-radius: 5px; border: 1px solid var(--line); background: var(--panel-2); padding: 0; position: relative; }
+.cell.q { background: color-mix(in srgb, var(--panel-2) 70%, var(--bg)); }
+.cell.on { background: var(--c); border-color: var(--c); box-shadow: 0 0 10px -2px var(--c); }
+.cell.ph { outline: 2px solid color-mix(in srgb, var(--ink) 55%, transparent); outline-offset: 1px; }
+.cell.reveal::after { content: ""; position: absolute; inset: 5px; border-radius: 3px; border: 2px dashed var(--c); }
+.legend { font: 12px/1.4 var(--f-mono); color: var(--muted); }
+
+/* ---------- Patch Match ---------- */
+.synth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 760px) { .synth { grid-template-columns: minmax(0, 1fr); } }
+.scope { width: 100%; height: 150px; display: block; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.waves { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.wave { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); font-size: 12px; font-weight: 600; }
+.wave svg { width: 44px; height: 22px; }
+.wave[aria-pressed="true"] { border-color: var(--amber); box-shadow: inset 0 -2px 0 var(--amber); }
+.wave:disabled { opacity: .4; }
+.knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+.knob { display: grid; justify-items: center; gap: 4px; padding: 10px 4px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); touch-action: none; user-select: none; -webkit-user-select: none; }
+.knob svg { width: 64px; height: 64px; cursor: ns-resize; }
+.knob .kl { font: 600 11px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.knob .kv { font: 600 13px/1 var(--f-mono); }
+.knob.locked { opacity: .4; }
+.knob.locked svg { cursor: not-allowed; }
+.matchbars { display: grid; gap: 10px; }
+.mb { display: grid; grid-template-columns: 90px minmax(0, 1fr) 48px; gap: 10px; align-items: center; font-size: 13px; }
+.mb .bar { height: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; border: 1px solid var(--line); }
+.mb .bar i { display: block; height: 100%; background: var(--teal); }
+.mb .vals { grid-column: 2 / 4; font: 11px/1.3 var(--f-mono); color: var(--muted); margin-top: -6px; }
+.bigpct { font: 44px/1 var(--f-display); color: var(--teal); }
+
+/* ---------- Mix Doctor ---------- */
+.mixer { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.strip { display: grid; justify-items: center; gap: 8px; padding: 12px 6px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.strip .nm { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.strip.bad { border-color: var(--coral); }
+.panmeter { position: relative; width: min(70px, 100%); height: 8px; border-radius: 4px; background: var(--panel-2); }
+.panmeter i { position: absolute; top: -3px; width: 4px; height: 14px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); transition: left .5s; }
+.fader { position: relative; width: 10px; height: 130px; border-radius: 5px; background: var(--panel-2); }
+.fader .cap { position: absolute; left: 50%; width: 38px; height: 16px; border-radius: 3px; transform: translate(-50%, 50%); background: linear-gradient(var(--muted), var(--line)); border: 1px solid var(--line); transition: bottom .5s; }
+.fader .cap::after { content: ""; position: absolute; left: 4px; right: 4px; top: 7px; height: 2px; background: var(--ink); }
+.fader .ref { position: absolute; left: -12px; right: -12px; height: 2px; background: var(--teal); opacity: .6; }
+.strip .db { font: 600 12px/1 var(--f-mono); color: var(--muted); }
+.strip.bad .db { color: var(--coral); }
+.mixans { display: grid; gap: 6px; }
+.mixans .mr { display: grid; grid-template-columns: 90px repeat(var(--cols), minmax(0, 1fr)); gap: 6px; align-items: center; }
+.mixans .mr > span { font: 600 12px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--c, var(--muted)); }
+.mixans .colh { font: 600 11px/1.2 var(--f-mono); color: var(--muted); text-align: center; }
+.mixans .ans { padding: 10px 4px; font-size: 13px; font-weight: 600; }
+@media (max-width: 520px) { .mixans .mr { grid-template-columns: 64px repeat(var(--cols), minmax(0, 1fr)); } .fader { height: 100px; } .strip { padding: 10px 3px; } .strip .db { font-size: 10px; text-align: center; } .mixer { gap: 6px; } }
+
+/* ---------- modal ---------- */
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(4px); }
+.dialog { width: min(440px, 100%); display: grid; gap: 14px; justify-items: center; text-align: center; padding: 28px 22px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 30px 80px -20px #000; }
+.dialog h2 { font: 28px/1.05 var(--f-display); }
+.dialog p { margin: 0; color: var(--muted); }
+.bigstars { display: flex; gap: 10px; font-size: 44px; line-height: 1; }
+.bigstars span { color: var(--line); transform: scale(.6); opacity: .4; transition: transform .35s cubic-bezier(.3,1.6,.5,1), opacity .2s, color .2s; }
+.bigstars span.lit { color: var(--amber); transform: scale(1); opacity: 1; text-shadow: 0 0 22px color-mix(in srgb, var(--amber) 60%, transparent); }
+.dialog .row { justify-content: center; }
+.foot { margin-top: 36px; color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between; }
+.foot button { background: none; border: 0; padding: 0; color: var(--muted); text-decoration: underline; font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="topbar">
+    <button class="logo" id="home" aria-label="Studio Arcade home"><span class="vu" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Studio Arcade</button>
+    <span class="pill" title="Stars earned"><span class="star">★</span><span id="totalStars">0 / 0</span></span>
+  </header>
+
+  <main id="hub">
+    <section class="hero">
+      <span class="eyebrow">Ear training for producers</span>
+      <h1>Train the ears that <em>make the mix.</em></h1>
+      <p>Four arcade cabinets, four studio skills. Hunt frequencies, copy grooves, match synth patches and fix broken mixes, one level at a time.</p>
+      <span class="tip"><b>●</b> Headphones or decent speakers help a lot. Laptop speakers can't play the 31–63 Hz bands.</span>
+    </section>
+    <section class="cards" id="cards" aria-label="Games"></section>
+    <footer class="foot">
+      <span>All sounds are synthesized live in your browser. Progress is saved on this device.</span>
+      <span class="footbtns"><button id="saveBtn" type="button" aria-expanded="false" aria-controls="saveBox">Save codes</button><button id="resetBtn" type="button">Reset progress</button></span>
+    </footer>
+    <section class="panel savebox" id="saveBox" aria-label="Save codes" hidden>
+      <div class="savecol">
+        <label class="eyebrow" for="myCode">Your save code</label>
+        <p class="brief">Copy this code and keep it somewhere safe. Paste it on another device or browser to bring your stars and Mastery bests with you.</p>
+        <textarea id="myCode" rows="3" readonly></textarea>
+        <div class="row"><button class="btn primary" id="copyCode" type="button">Copy code</button><span class="legend" id="copyMsg" aria-live="polite"></span></div>
+      </div>
+      <div class="savecol">
+        <label class="eyebrow" for="inCode">Load a save code</label>
+        <p class="brief">Loading merges with this device: each level keeps whichever star count is higher, so an old code never erases newer progress.</p>
+        <textarea id="inCode" rows="3" placeholder="Paste a code that starts with SA1-"></textarea>
+        <div class="row"><button class="btn" id="loadCode" type="button">Load code</button><span class="legend" id="loadMsg" aria-live="polite"></span></div>
+      </div>
+    </section>
+  </main>
+
+  <main id="game" hidden>
+    <div class="game-head">
+      <div class="game-title">
+        <button class="btn ghost" id="backBtn" type="button">← Arcade</button>
+        <span class="eyebrow" id="gSkill"></span>
+        <h1 id="gTitle"></h1>
+      </div>
+      <nav class="lvls" id="lvls" aria-label="Levels"></nav>
+    </div>
+    <div class="stage" id="stage"></div>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="bigstars" id="mStars" aria-hidden="true"><span>★</span><span>★</span><span>★</span></div>
+    <h2 id="mTitle"></h2>
+    <p id="mText"></p>
+    <div class="row" id="mBtns"></div>
+  </div>
+</div>
+<script>
+"use strict";
+/* ================= helpers ================= */
+const $ = (s, el = document) => el.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style' && typeof v === 'object') for (const [p, x] of Object.entries(v)) el.style.setProperty(p, x);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (k === 'html') el.innerHTML = v;
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) el.append(k.nodeType ? k : document.createTextNode(k));
+  return el;
+}
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmtHz = f => f >= 1000 ? (Math.round(f / 100) / 10).toString().replace(/\.0$/, '') + 'k' : Math.round(f) + '';
+const fmtS = s => s < 1 ? Math.round(s * 1000) + ' ms' : s.toFixed(2) + ' s';
+const starsHTML = (n, max = 3) => `<span class="stars" aria-label="${n} of ${max} stars"><b>${'★'.repeat(n)}</b>${'★'.repeat(max - n)}</span>`;
+
+/* ================= save ================= */
+const SAVE_KEY = 'studio-arcade-v1';
+let save = { stars: {}, mastery: {} };
+function loadSave() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (s && s.stars) save = { stars: s.stars, mastery: s.mastery || {} }; } catch (e) {} }
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+const starsOf = (g, i) => save.stars[g + '-' + i] || 0;
+function award(g, i, n) { if (n > starsOf(g, i)) { save.stars[g + '-' + i] = n; persist(); } }
+const unlocked = (g, i) => i === 0 || starsOf(g, i - 1) > 0;
+const allCleared = g => g.levels.every((_, i) => starsOf(g.id, i) > 0);
+const masteryBest = id => (save.mastery[id] && save.mastery[id].best) || 0;
+
+/* ================= audio engine ================= */
+const A = { ctx: null };
+function ac() {
+  if (!A.ctx) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    const ctx = A.ctx = new C();
+    A.out = ctx.createGain(); A.out.gain.value = 0.9;
+    A.lim = ctx.createDynamicsCompressor(); // safety limiter only
+    A.lim.threshold.value = -2; A.lim.knee.value = 0; A.lim.ratio.value = 20; A.lim.attack.value = 0.002; A.lim.release.value = 0.12;
+    A.an = ctx.createAnalyser(); A.an.fftSize = 2048;
+    A.out.connect(A.lim); A.lim.connect(A.an); A.an.connect(ctx.destination);
+    const sr = ctx.sampleRate;
+    A.noise = ctx.createBuffer(1, sr * 2, sr);
+    const nd = A.noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    // Pink noise (Paul Kellet's filter): equal energy per octave, the classic EQ-training source
+    A.pink = ctx.createBuffer(2, sr * 4, sr);
+    for (let c = 0; c < 2; c++) {
+      const o = A.pink.getChannelData(c); let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < o.length; i++) {
+        const w = Math.random() * 2 - 1;
+        b0 = .99886 * b0 + w * .0555179; b1 = .99332 * b1 + w * .0750759; b2 = .969 * b2 + w * .153852;
+        b3 = .8665 * b3 + w * .3104856; b4 = .55 * b4 + w * .5329522; b5 = -.7616 * b5 - w * .016898;
+        o[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926;
+      }
+    }
+  }
+  if (A.ctx.state === 'suspended') A.ctx.resume();
+  return A.ctx;
+}
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+function noise(t, dur) { const s = A.ctx.createBufferSource(); s.buffer = A.noise; s.start(t, Math.random() * 1.5, dur + 0.05); return s; }
+function env(g, t, peak, a, d) { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+function filt(type, f, q) { const n = A.ctx.createBiquadFilter(); n.type = type; n.frequency.value = f; if (q != null) n.Q.value = q; return n; }
+
+const DRUMS = {
+  kick(t, out, v = 1) {
+    const c = A.ctx, o = c.createOscillator(), g = c.createGain();
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13);
+    env(g, t, v, 0.002, 0.42); o.connect(g).connect(out); o.start(t); o.stop(t + 0.5);
+    const g2 = c.createGain(); env(g2, t, 0.25 * v, 0.001, 0.015); noise(t, 0.03).connect(filt('highpass', 2000)).connect(g2).connect(out);
+  },
+  snare(t, out, v = 1) {
+    const c = A.ctx, g = c.createGain(); env(g, t, 0.55 * v, 0.001, 0.2);
+    noise(t, 0.25).connect(filt('highpass', 1400)).connect(g).connect(out);
+    const o = c.createOscillator(), g2 = c.createGain(); o.type = 'triangle';
+    o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(160, t + 0.08);
+    env(g2, t, 0.5 * v, 0.001, 0.1); o.connect(g2).connect(out); o.start(t); o.stop(t + 0.15);
+  },
+  clap(t, out, v = 1) {
+    const g = A.ctx.createGain(); g.gain.setValueAtTime(0.0001, t);
+    [0, 0.011, 0.022].forEach(o => { g.gain.setValueAtTime(0.9 * v, t + o); g.gain.exponentialRampToValueAtTime(0.15 * v, t + o + 0.009); });
+    g.gain.setValueAtTime(0.7 * v, t + 0.032); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    noise(t, 0.3).connect(filt('bandpass', 1400, 1.1)).connect(g).connect(out);
+  },
+  hat(t, out, v = 1) { const g = A.ctx.createGain(); env(g, t, 0.32 * v, 0.001, 0.045); noise(t, 0.08).connect(filt('highpass', 7500)).connect(g).connect(out); },
+  ohat(t, out, v = 1) { const g = A.ctx.createGain(); env(g, t, 0.24 * v, 0.003, 0.32); noise(t, 0.4).connect(filt('highpass', 7000)).connect(g).connect(out); },
+};
+
+// Subtractive synth voice: oscillator -> low-pass filter -> AR amp envelope
+function synth(p, t, dur, freq, out, vel = 0.3) {
+  const c = A.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = p.wave; o.frequency.value = freq;
+  const f = filt('lowpass', p.cutoff, p.res ?? 0.8);
+  const a = Math.max(0.003, p.attack), r = Math.max(0.02, p.release), rs = t + dur;
+  g.gain.setValueAtTime(0, t);
+  if (dur >= a) { g.gain.linearRampToValueAtTime(vel, t + a); g.gain.setValueAtTime(vel, rs); }
+  else g.gain.linearRampToValueAtTime(vel * dur / a, rs); // note released before the attack finished
+  g.gain.setTargetAtTime(0, rs, r / 4);
+  o.connect(f).connect(g).connect(out); o.start(t); o.stop(rs + r * 1.6 + 0.05);
+}
+
+/* playback sessions: one thing plays at a time; stopAll() silences it cleanly */
+const Seq = { timer: null, gen: 0 };
+let sess = null;
+function newSession(level = 1) {
+  stopAll(); const c = ac();
+  const g = c.createGain(); g.gain.value = level; g.connect(A.out);
+  sess = { g, srcs: [], onStop: null }; return sess;
+}
+function stopAll() {
+  Seq.gen++; clearInterval(Seq.timer); Seq.timer = null;
+  if (!sess) return;
+  const s = sess; sess = null;
+  try { s.g.gain.setTargetAtTime(0, A.ctx.currentTime, 0.015); } catch (e) {}
+  s.srcs.forEach(x => { try { x.stop(A.ctx.currentTime + 0.1); } catch (e) {} });
+  setTimeout(() => { try { s.g.disconnect(); } catch (e) {} }, 150);
+  if (s.onStop) s.onStop();
+}
+// Lookahead scheduler: a 25 ms timer queues notes ~120 ms ahead on the audio clock (sample-accurate timing, jitter-free)
+function seqStart({ bpm, steps, onStep, onUI }) {
+  const c = A.ctx, gen = Seq.gen;
+  let step = 0, next = c.currentTime + 0.06;
+  const tick = () => {
+    const spb = 60 / (typeof bpm === 'function' ? bpm() : bpm) / 4;
+    while (next < c.currentTime + 0.12) {
+      const s = step, t = next;
+      onStep(s, t);
+      if (onUI) setTimeout(() => { if (gen === Seq.gen) onUI(s); }, Math.max(0, (t - c.currentTime) * 1000));
+      step = (s + 1) % steps; next += spb;
+    }
+  };
+  tick(); Seq.timer = setInterval(tick, 25);
+}
+
+/* ================= the backing track (A minor, 4 bars) ================= */
+const SONG = {
+  bpm: 104, steps: 64,
+  chords: [[57, 60, 64], [53, 57, 60], [55, 60, 64], [55, 59, 62]], // Am  F  C/G  G
+  bass: [45, 41, 36, 43], bassSteps: [0, 3, 6, 8, 11, 14],
+  lead: [[0,76,2],[2,72,2],[4,74,2],[6,76,4],[12,79,2],[14,76,2],[16,77,4],[20,76,2],[22,72,2],[24,69,6],[32,72,2],[34,74,2],[36,76,2],[38,79,4],[44,76,2],[46,74,2],[48,74,4],[52,71,2],[54,74,2],[56,79,6]],
+  drums: { kick: [0, 7, 10], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12], ohat: [14] },
+};
+SONG.leadAt = {}; SONG.lead.forEach(([s, n, l]) => SONG.leadAt[s] = [n, l]);
+const PATCH = {
+  bass: { wave: 'sawtooth', cutoff: 520, res: 3, attack: 0.005, release: 0.08 },
+  keys: { wave: 'sawtooth', cutoff: 2200, res: 0.7, attack: 0.03, release: 0.35 },
+  lead: { wave: 'square', cutoff: 3200, res: 1, attack: 0.01, release: 0.15 },
+};
+const TRACKS = [
+  { id: 'drums', name: 'Drums', c: 'var(--amber)' },
+  { id: 'bass', name: 'Bass', c: 'var(--coral)' },
+  { id: 'keys', name: 'Keys', c: 'var(--violet)' },
+  { id: 'lead', name: 'Lead', c: 'var(--teal)' },
+];
+// Build per-track channel strips (gain + pan) feeding `dest`. mix = {drums:{db, pan}, ...}; omitted tracks are muted.
+function songGraph(dest, mix) {
+  const c = A.ctx, m = {};
+  for (const tr of TRACKS) {
+    if (!mix[tr.id]) continue;
+    const g = c.createGain(), p = c.createStereoPanner();
+    g.gain.value = Math.pow(10, (mix[tr.id].db || 0) / 20); p.pan.value = mix[tr.id].pan || 0;
+    g.connect(p).connect(dest); g._pan = p; m[tr.id] = g;
+  }
+  return m;
+}
+function songStep(m, s, t) {
+  const spb = 60 / SONG.bpm / 4, bar = s >> 4, b = s % 16;
+  if (m.drums) for (const k in SONG.drums) if (SONG.drums[k].includes(b)) DRUMS[k](t, m.drums, 0.9);
+  if (m.bass && SONG.bassSteps.includes(b)) synth(PATCH.bass, t, spb * 1.6, mtof(SONG.bass[bar]), m.bass, 0.34);
+  if (m.keys && (b === 0 || b === 8)) SONG.chords[bar].forEach(n => synth(PATCH.keys, t, spb * 7, mtof(n), m.keys, 0.075));
+  if (m.lead && SONG.leadAt[s]) { const [n, l] = SONG.leadAt[s]; synth(PATCH.lead, t, spb * l * 0.9, mtof(n), m.lead, 0.11); }
+}
+function playSong(dest, mix) { const m = songGraph(dest, mix); seqStart({ bpm: SONG.bpm, steps: SONG.steps, onStep: (s, t) => songStep(m, s, t) }); return m; }
+
+/* little UI sounds */
+function blip(freqs, type = 'triangle', gap = 0.09, vel = 0.18) {
+  const c = ac(), t0 = c.currentTime + 0.02;
+  freqs.forEach((f, i) => synth({ wave: type, cutoff: 5000, attack: 0.005, release: 0.18 }, t0 + i * gap, 0.08, f, A.out, vel));
+}
+const sfx = {
+  ok: () => blip([mtof(76), mtof(83)]),
+  bad: () => blip([mtof(52), mtof(47)], 'sawtooth', 0.11, 0.1),
+  star: i => blip([mtof(79 + i * 4)], 'triangle', 0, 0.2),
+};
+
+/* ================= knob component ================= */
+function knob({ label, min, max, value, def = value, log = false, fmt = v => v.toFixed(2), onChange, locked = false }) {
+  const toN = v => log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min);
+  const fromN = x => log ? min * Math.pow(max / min, x) : min + (max - min) * x;
+  const P = (deg, r) => { const a = deg * Math.PI / 180; return [32 + r * Math.sin(a), 32 - r * Math.cos(a)]; };
+  const arc = (d0, d1, r = 27) => { const [x0, y0] = P(d0, r), [x1, y1] = P(d1, r); return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${d1 - d0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  let n = clamp(toN(value)), drag = null;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 64 64');
+  svg.innerHTML = `<path d="${arc(-135, 135)}" style="fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round"/>
+    <path class="v" style="fill:none;stroke:var(--amber);stroke-width:4;stroke-linecap:round"/>
+    <circle cx="32" cy="32" r="20" style="fill:var(--panel-2);stroke:var(--line)"/>
+    <line class="p" x1="32" y1="32" style="stroke:var(--ink);stroke-width:3;stroke-linecap:round"/>`;
+  const kv = h('span', { class: 'kv' });
+  const el = h('div', { class: 'knob' }, svg, h('span', { class: 'kl' }, label), kv);
+  svg.setAttribute('role', 'slider'); svg.setAttribute('aria-label', label);
+  function render() {
+    const d = -135 + 270 * n, [x, y] = P(d, 15);
+    svg.querySelector('.v').setAttribute('d', n > 0.004 ? arc(-135, d) : '');
+    const p = svg.querySelector('.p'); p.setAttribute('x2', x.toFixed(2)); p.setAttribute('y2', y.toFixed(2));
+    kv.textContent = fmt(fromN(n)); svg.setAttribute('aria-valuetext', kv.textContent);
+  }
+  function set(x) { if (locked) return; n = clamp(x); render(); if (onChange) onChange(fromN(n)); }
+  svg.addEventListener('pointerdown', e => { if (locked) return; svg.setPointerCapture(e.pointerId); drag = { y: e.clientY, n }; e.preventDefault(); svg.focus(); });
+  svg.addEventListener('pointermove', e => { if (drag) set(drag.n + (drag.y - e.clientY) / (e.shiftKey ? 600 : 160)); });
+  const end = () => { drag = null; };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  svg.addEventListener('wheel', e => { if (locked) return; e.preventDefault(); set(n - Math.sign(e.deltaY) * 0.02); }, { passive: false });
+  svg.addEventListener('dblclick', () => set(toN(def)));
+  svg.addEventListener('keydown', e => {
+    const k = { ArrowUp: .02, ArrowRight: .02, ArrowDown: -.02, ArrowLeft: -.02, PageUp: .1, PageDown: -.1 }[e.key];
+    if (k != null) { e.preventDefault(); e.stopPropagation(); set(n + k); }
+    else if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); set(e.key === 'End' ? 1 : 0); }
+  });
+  const api = {
+    el, get value() { return fromN(n); },
+    setValue(v) { n = clamp(toN(v)); render(); },
+    setLocked(b) { locked = b; el.classList.toggle('locked', b); svg.setAttribute('tabindex', b ? '-1' : '0'); svg.setAttribute('aria-disabled', b ? 'true' : 'false'); },
+  };
+  api.setLocked(locked); render();
+  return api;
+}
+
+/* ================= games registry, hub, router ================= */
+const GAMES = [];
+let cur = null; // { game, level, api }
+const totalStars = () => GAMES.reduce((s, g) => s + g.levels.reduce((a, _, i) => a + starsOf(g.id, i), 0), 0);
+const maxStars = () => GAMES.reduce((s, g) => s + g.levels.length * 3, 0);
+
+function renderHub() {
+  $('#totalStars').textContent = `${totalStars()} / ${maxStars()}`;
+  $('#cards').replaceChildren(...GAMES.map(g => {
+    const got = g.levels.reduce((a, _, i) => a + starsOf(g.id, i), 0);
+    const cv = h('canvas', { width: 300, height: 60, 'aria-hidden': 'true' });
+    const card = h('article', { class: 'card', style: { '--hue': g.hue } },
+      h('span', { class: 'eyebrow' }, g.skill),
+      h('h2', {}, g.name),
+      h('p', {}, g.blurb),
+      g.mastery ? h('div', { class: 'mnote' },
+        h('span', {}, !allCleared(g) ? `Clear all ${g.levels.length} levels to unlock Mastery` : masteryBest(g.id) ? `Mastery best ${masteryBest(g.id)} / ${g.mastery.steps.length}` : 'Mastery mode unlocked'),
+        allCleared(g) ? h('button', { class: 'btn mbtn', type: 'button', onclick: () => openGame(g.id, 'M') }, 'Mastery ∞') : null) : h('span'),
+      h('div', { class: 'meta' },
+        h('span', { class: 'levels-dots', 'aria-label': `${got} of ${g.levels.length * 3} stars` },
+          g.levels.map((_, i) => h('i', { class: 's' + starsOf(g.id, i) }))),
+        h('button', { class: 'btn primary play', type: 'button', onclick: () => openGame(g.id) }, got ? 'Continue' : 'Play')),
+      cv);
+    const x = cv.getContext('2d'); x.strokeStyle = x.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(g.hue.slice(4, -1)).trim() || '#ffb547';
+    x.lineWidth = 2; g.deco(x, 300, 60);
+    return card;
+  }));
+}
+
+function openGame(id, level) {
+  stopAll(); closeModal();
+  if (cur && cur.api && cur.api.unmount) cur.api.unmount();
+  const game = GAMES.find(g => g.id === id); if (!game) return;
+  if (level === 'M' && !game.mastery) level = null;
+  if (level == null) { level = 0; while (level < game.levels.length - 1 && unlocked(id, level + 1)) level++; }
+  cur = { game, level, api: null };
+  $('#hub').hidden = true; $('#game').hidden = false;
+  $('#game').style.setProperty('--hue', game.hue);
+  $('#gSkill').textContent = game.skill; $('#gTitle').textContent = game.name;
+  renderLevels();
+  const stage = $('#stage'); stage.replaceChildren();
+  cur.api = game.mount(stage, level, level === 'M' ? sc => finishMastery(sc) : (stars, title, text) => finishLevel(stars, title, text)) || {};
+  window.scrollTo({ top: 0 });
+}
+function renderLevels() {
+  const g = cur.game;
+  const chips = g.levels.map((L, i) => h('button', {
+    class: 'lvl', type: 'button', 'aria-current': i === cur.level ? 'true' : 'false', disabled: !unlocked(g.id, i),
+    title: unlocked(g.id, i) ? L.desc : 'Earn a star on the previous level to unlock', onclick: () => openGame(g.id, i),
+  }, h('span', { class: 'n' }, 'LEVEL ' + (i + 1)), h('span', { class: 't' }, L.name), h('span', { html: starsHTML(starsOf(g.id, i)) })));
+  if (g.mastery) {
+    const ok = allCleared(g), b = masteryBest(g.id);
+    chips.push(h('button', {
+      class: 'lvl mastery', type: 'button', 'aria-current': cur.level === 'M' ? 'true' : 'false', disabled: !ok && cur.level !== 'M',
+      title: ok ? 'Endless rounds that adapt to you and measure your skill' : `Clear all ${g.levels.length} levels to unlock`, onclick: () => openGame(g.id, 'M'),
+    }, h('span', { class: 'n' }, 'MASTERY ∞'), h('span', { class: 't' }, 'Adaptive'), h('span', { class: 'mbest' }, b ? `best ${b} / ${g.mastery.steps.length}` : 'no runs yet')));
+  }
+  $('#lvls').replaceChildren(...chips);
+}
+function goHub() {
+  stopAll(); closeModal();
+  if (cur && cur.api && cur.api.unmount) cur.api.unmount();
+  cur = null; $('#game').hidden = true; $('#hub').hidden = false; renderHub();
+}
+
+/* ================= result modal ================= */
+let modalTimers = [];
+function closeModal() { modalTimers.forEach(clearTimeout); modalTimers = []; $('#modal').hidden = true; }
+function finishLevel(stars, title, text) {
+  stopAll();
+  const g = cur.game, L = cur.level, wasCleared = allCleared(g);
+  award(g.id, L, stars); renderLevels();
+  const justUnlocked = g.mastery && !wasCleared && allCleared(g);
+  if (justUnlocked) { title = 'Mastery unlocked!'; text = (text || '') + ' You cleared every level, so Mastery mode is open: endless rounds that adapt to your skill and give you a rating.'; }
+  $('#mStars').hidden = false; $('#totalStars').textContent = `${totalStars()} / ${maxStars()}`;
+  $('#mTitle').textContent = title || (stars ? ['', 'Level cleared', 'Nice ears!', 'Flawless!'][stars] : 'Not quite');
+  $('#mText').textContent = text || '';
+  const spans = [...$('#mStars').children]; spans.forEach(s => s.classList.remove('lit'));
+  const hasNext = L + 1 < g.levels.length;
+  const btns = [];
+  if (justUnlocked) btns.push(h('button', { class: 'btn primary', type: 'button', onclick: () => openGame(g.id, 'M') }, 'Start Mastery →'));
+  else if (stars > 0 && hasNext) btns.push(h('button', { class: 'btn primary', type: 'button', onclick: () => openGame(g.id, L + 1) }, 'Next level →'));
+  btns.push(h('button', { class: 'btn' + ((stars === 0 || !hasNext) && !justUnlocked ? ' primary' : ''), type: 'button', onclick: () => openGame(g.id, L) }, 'Play again'));
+  btns.push(h('button', { class: 'btn ghost', type: 'button', onclick: goHub }, 'Arcade'));
+  $('#mBtns').replaceChildren(...btns);
+  $('#modal').hidden = false; btns[0].focus();
+  if (!stars) sfx.bad();
+  for (let i = 0; i < stars; i++) modalTimers.push(setTimeout(() => { spans[i].classList.add('lit'); sfx.star(i); }, 250 + i * 280));
+}
+
+function finishMastery(sc) {
+  stopAll();
+  const g = cur.game, conf = g.mastery, N = conf.steps.length;
+  const rating = Math.round((sc.rating + 1) * 10) / 10;
+  const m = save.mastery[g.id] || { best: 0, runs: [] }, prev = m.best;
+  m.runs = [...m.runs, { t: Date.now(), r: rating }].slice(-50); m.best = Math.max(prev, rating);
+  save.mastery[g.id] = m; persist(); renderLevels();
+  $('#mStars').hidden = true;
+  $('#mTitle').textContent = `${conf.unit}: ${rating} / ${N}`;
+  $('#mText').textContent = `You settled around ${conf.steps[Math.round(sc.rating)].desc} (${sc.trials} rounds, ${Math.round(sc.hits / sc.trials * 100)}% correct). `
+    + (!prev ? 'First run logged. Play again to track your progress.' : rating > prev ? `New personal best! Previous best: ${prev}.` : `Personal best: ${m.best}.`);
+  const btns = [h('button', { class: 'btn primary', type: 'button', onclick: () => openGame(g.id, 'M') }, 'Run again'), h('button', { class: 'btn ghost', type: 'button', onclick: goHub }, 'Arcade')];
+  $('#mBtns').replaceChildren(...btns); $('#modal').hidden = false; btns[0].focus();
+  if (rating > prev) [0, 1, 2].forEach(i => modalTimers.push(setTimeout(() => sfx.star(i), 200 + i * 200))); else sfx.ok();
+}
+
+/* Adaptive difficulty ("2-down / 1-up" staircase, as used in hearing tests).
+   Two right in a row -> one step harder; one miss -> one step easier. This settles where the player is right ~71% of the time.
+   Until the first miss, every right answer steps up (fast start). The rating is the average step at the last 6 turnarounds. */
+function staircase(n, start = 0, maxTurns = 8, maxTrials = 30) {
+  const s = {
+    n, idx: start, run: 0, dir: 0, fast: true, turns: [], trials: 0, hits: 0, trace: [start], maxTurns, maxTrials,
+    record(ok) {
+      s.trials++; if (ok) s.hits++;
+      let d = 0;
+      if (ok) { if (s.fast || ++s.run >= 2) { s.run = 0; d = 1; } } else { s.run = 0; s.fast = false; d = -1; }
+      if (d && s.dir && d !== s.dir) s.turns.push(s.idx);
+      if (d) s.dir = d;
+      s.idx = Math.max(0, Math.min(n - 1, s.idx + d)); s.trace.push(s.idx);
+    },
+    get done() { return s.turns.length >= maxTurns || s.trials >= maxTrials; },
+    get rating() { const t = s.turns.slice(-6); return t.length >= 2 ? t.reduce((a, b) => a + b, 0) / t.length : s.idx; },
+    get progress() { return Math.max(s.turns.length / maxTurns, s.trials / maxTrials); },
+  };
+  return s;
+}
+function masteryHud(sc) {
+  const W = 120, H = 26, xs = Math.max(sc.trace.length - 1, 12);
+  const pts = sc.trace.map((v, i) => `${(2 + i / xs * (W - 4)).toFixed(1)},${(H - 3 - v / (sc.n - 1) * (H - 6)).toFixed(1)}`).join(' ');
+  const filled = Math.round(sc.progress * 10);
+  return [
+    h('span', {}, 'DIFFICULTY ', h('b', {}, `${sc.idx + 1}/${sc.n}`)),
+    h('span', { title: 'Difficulty so far', html: `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true" style="display:block"><polyline points="${pts}" style="fill:none;stroke:var(--amber);stroke-width:2;stroke-linejoin:round;stroke-linecap:round"/></svg>` }),
+    h('span', { style: { display: 'inline-flex', 'align-items': 'center', gap: '8px' } }, 'RUN', h('span', { class: 'progress', title: 'The run ends once your level settles' }, Array.from({ length: 10 }, (_, i) => h('i', { class: i < filled ? 'ok' : '' })))),
+  ];
+}
+
+/* shared bits used by several games */
+function progressBar(results, total) {
+  return h('span', { class: 'progress', 'aria-hidden': 'true' },
+    Array.from({ length: total }, (_, i) => h('i', { class: results[i] === true ? 'ok' : results[i] === false ? 'bad' : i === results.length ? 'now' : '' })));
+}
+function playBtn(label, key) {
+  return h('button', { class: 'btn', type: 'button' }, h('span', { class: 'lbl' }, label), key ? h('kbd', {}, key) : null);
+}
+function setPlaying(btn, on, label) { btn.classList.toggle('playing', on); btn.querySelector('.lbl').textContent = on ? '■ Stop' : label; }
+
+/* ================= GAME 1: Frequency Hunter (EQ) ================= */
+const EQ_INFO = {
+  63: ['sub', 'Sub bass. The chest-thump weight of kicks and 808s. Small speakers barely reproduce it.'],
+  80: ['low end', 'Low end. Kick and bass fundamentals live here.'],
+  100: ['lows', 'Lows. The body of kicks and bass; too much and the whole mix feels heavy.'],
+  125: ['bass', 'Bass body. Warmth and punch; overdo it and things turn boomy.'],
+  250: ['mud', 'Mud zone. Adds warmth, but buildup here makes mixes cloudy. A very common cut on guitars, keys and vocals.'],
+  500: ['box', 'Boxy. A hollow, cardboard tone. Toms and small rooms pile up here.'],
+  1000: ['honk', 'Honk. Nasal, telephone-like midrange. Ears pick it up quickly.'],
+  2000: ['bite', 'Bite. The attack of guitars and snares; boosts add edge, then harshness.'],
+  3000: ['presence', 'Presence. Vocal clarity and intelligibility. Hearing is most sensitive around 3 kHz.'],
+  4000: ['edge', 'Edge. Articulation and consonants; too much gets fatiguing fast.'],
+  8000: ['sizzle', 'Sizzle. Cymbals, hi-hats and the "s" sounds in vocals (sibilance).'],
+  90: ['low end', 'Low end. Kick and bass fundamentals live here.'],
+  180: ['warmth', 'Warmth. The body of guitars, keys and male vocals; too much starts to muddy.'],
+  355: ['mud', 'Upper mud. Thickness that clouds a mix when several instruments pile up here.'],
+  710: ['box', 'Boxy to nasal. A hollow quality that makes sounds feel cheap.'],
+  1400: ['honk', 'Upper honk. Forward and nasal, the "telephone" band.'],
+  2800: ['presence', 'Presence. Clarity and intelligibility; hearing is most sensitive near here.'],
+  5600: ['edge', 'Edge. Consonants, pick and stick attack; harsh when overdone.'],
+};
+const OCT8 = [63, 125, 250, 500, 1000, 2000, 4000, 8000];
+const HALF15 = [63, 90, 125, 180, 250, 355, 500, 710, 1000, 1400, 2000, 2800, 4000, 5600, 8000];
+const hzLabel = f => f >= 1000 ? f / 1000 + ' kHz' : f + ' Hz';
+const offlineCtx = (() => { try { return new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 128, 44100); } catch (e) { return null; } })();
+function peakResp(f0, gain, q, freqs) {
+  const mag = new Float32Array(freqs.length);
+  if (offlineCtx) {
+    const b = offlineCtx.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = f0; b.gain.value = gain; b.Q.value = q;
+    b.getFrequencyResponse(freqs, mag, new Float32Array(freqs.length));
+  } else freqs.forEach((f, i) => mag[i] = Math.pow(10, gain * Math.exp(-Math.pow(Math.log2(f / f0), 2) / 0.25) / 20));
+  return mag;
+}
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+GAMES.push({
+  id: 'eq', name: 'Frequency Hunter', skill: 'EQ · Ear training', hue: 'var(--violet)',
+  blurb: 'One band of the spectrum has been boosted. Flip the EQ in and out, then name the frequency.',
+  levels: [
+    { name: 'Low · Mid · High', desc: '3 bands, +12 dB boosts', bands: [100, 1000, 8000], gain: 12 },
+    { name: 'Five Zones', desc: '5 bands, +12 dB boosts', bands: [80, 250, 1000, 3000, 8000], gain: 12 },
+    { name: 'Octave Bands', desc: '8 octave bands, +12 dB boosts', bands: OCT8, gain: 12 },
+    { name: 'Subtle Boosts', desc: '8 octave bands, only +6 dB', bands: OCT8, gain: 6 },
+    { name: 'Cut Hunter', desc: '8 octave bands, −12 dB cuts', bands: OCT8, gain: -12 },
+  ],
+  mastery: {
+    unit: 'EQ rating', start: 2,
+    steps: [
+      { bands: [100, 1000, 8000], gain: 12, desc: '3 bands at +12 dB' },
+      { bands: [80, 250, 1000, 3000, 8000], gain: 12, desc: '5 bands at +12 dB' },
+      { bands: OCT8, gain: 12, desc: 'octave bands at +12 dB' },
+      { bands: OCT8, gain: 9, desc: 'octave bands at +9 dB' },
+      { bands: OCT8, gain: 6, desc: 'octave bands at +6 dB' },
+      { bands: OCT8, gain: 4, desc: 'octave bands at +4 dB' },
+      { bands: HALF15, gain: 9, q: 2, desc: 'half-octave bands at +9 dB' },
+      { bands: HALF15, gain: 6, q: 2, desc: 'half-octave bands at +6 dB' },
+      { bands: HALF15, gain: 4, q: 2, desc: 'half-octave bands at +4 dB' },
+      { bands: HALF15, gain: 3, q: 2, desc: 'half-octave bands at +3 dB' },
+    ],
+  },
+  src: 'pink',
+  deco(x, w, hh) { x.beginPath(); for (let i = 0; i <= w; i++) x.lineTo(i, hh - 8 - Math.exp(-Math.pow((i - w * .62) / 26, 2)) * (hh - 18)); x.stroke(); },
+  mount(stage, li, done) {
+    const self = this, M = li === 'M', ROUNDS = 8, sc = M ? staircase(this.mastery.steps.length, this.mastery.start) : null;
+    let L = M ? this.mastery.steps[sc.idx] : this.levels[li];
+    const Q = () => L.q || 1.2;
+    let r = 0, results = [], target = 0, prev = -1, answered = false, guess = null, streak = 0, best = 0, score = 0;
+    let eqOn = true, node = null, playing = false, curF = L.bands[0];
+
+    const hud = h('div', { class: 'hud' });
+    const cv = h('canvas', { class: 'eqview', role: 'img', 'aria-label': 'EQ curve display' });
+    const play = playBtn('▶ Play', 'Space');
+    play.onclick = () => playing ? stopAll() : start();
+    const bFlat = h('button', { type: 'button', onclick: () => setEq(false) }, 'Flat');
+    const bEq = h('button', { type: 'button', onclick: () => setEq(true) }, 'EQ in');
+    const srcSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Sound source' },
+      [['pink', 'Pink noise'], ['drums', 'Drums'], ['mix', 'Full mix']].map(([k, l]) =>
+        h('button', { type: 'button', 'data-k': k, onclick: () => { self.src = k; renderSrc(); if (playing) start(); } }, l)));
+    const answers = h('div', { class: 'answers' });
+    const fb = h('div', { class: 'feedback', hidden: true });
+    const brief = h('p', { class: 'brief' }), keysLbl = h('span', { class: 'legend' });
+    function renderBrief() {
+      brief.innerHTML = (M ? `<b>Mastery · ${L.desc}.</b> Two right in a row makes it harder; a miss makes it easier. Your rating is where you settle. `
+        : `<b>${L.desc}.</b> One band is ${L.gain > 0 ? 'boosted' : 'cut'} by ${Math.abs(L.gain)} dB. `) + 'Toggle <b>Flat / EQ in</b> to compare, then pick the band.';
+      keysLbl.textContent = 'Keys 1–' + Math.min(9, L.bands.length);
+    }
+    stage.append(
+      h('div', { class: 'panel' },
+        h('div', { class: 'panel-head' },
+          brief, hud),
+        cv,
+        h('div', { class: 'row', style: { 'margin-top': '12px' } }, play,
+          h('span', { class: 'eyebrow' }, 'Compare (B)'), h('div', { class: 'seg', role: 'group', 'aria-label': 'EQ in or out' }, bFlat, bEq),
+          h('span', { class: 'spacer' }), h('span', { class: 'eyebrow' }, 'Source'), srcSeg)),
+      h('div', { class: 'panel' },
+        h('div', { class: 'panel-head' }, h('span', { class: 'eyebrow' }, 'Which band changed?'), keysLbl),
+        answers),
+      fb);
+
+    function start() {
+      const s = newSession(1), c = A.ctx; playing = true; setPlaying(play, true, '▶ Play');
+      s.onStop = () => { playing = false; node = null; setPlaying(play, false, '▶ Play'); };
+      node = c.createBiquadFilter(); node.type = 'peaking'; node.Q.value = Q(); node.frequency.value = curF; node.gain.value = eqOn ? L.gain : 0;
+      node.connect(s.g);
+      const g = c.createGain(); g.connect(node);
+      if (self.src === 'pink') { g.gain.value = 0.45; const b = c.createBufferSource(); b.buffer = A.pink; b.loop = true; b.connect(g); b.start(); s.srcs.push(b); }
+      else { g.gain.value = 0.55; playSong(g, self.src === 'drums' ? { drums: {} } : { drums: {}, bass: {}, keys: {}, lead: {} }); }
+    }
+    function updateNode() { if (!node) return; const t = A.ctx.currentTime; node.frequency.setTargetAtTime(curF, t, 0.01); node.Q.setTargetAtTime(Q(), t, 0.01); node.gain.setTargetAtTime(eqOn ? L.gain : 0, t, 0.02); }
+    function setEq(on) { eqOn = on; bFlat.setAttribute('aria-pressed', String(!on)); bEq.setAttribute('aria-pressed', String(on)); updateNode(); draw(); }
+    function renderSrc() { srcSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === self.src))); }
+    function audition(f) { curF = f; setEq(true); if (!playing) start(); }
+
+    function renderHud() {
+      if (M) { hud.replaceChildren(...masteryHud(sc), h('span', { class: 'streak' }, 'STREAK ', h('b', {}, '×' + streak))); return; }
+      hud.replaceChildren(h('span', {}, 'ROUND ', h('b', {}, `${r + 1}/${ROUNDS}`)), progressBar(results, ROUNDS),
+        h('span', {}, 'SCORE ', h('b', {}, score)), h('span', { class: 'streak' }, 'STREAK ', h('b', {}, '×' + streak)));
+    }
+    function renderAnswers() {
+      answers.replaceChildren(...L.bands.map((f, i) => {
+        const b = h('button', { class: 'ans', type: 'button', onclick: () => answer(i) },
+          h('span', { class: 'hz' }, fmtHz(f)), h('span', { class: 'tag' }, EQ_INFO[f][0]), i < 9 ? h('span', { class: 'key' }, String(i + 1)) : null);
+        if (answered) { b.disabled = true; if (i === target) b.classList.add('correct'); else if (i === guess) b.classList.add('wrong'); }
+        return b;
+      }));
+    }
+    function draw() {
+      const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
+      cv.width = W * dpr; cv.height = H * dpr; const x = cv.getContext('2d'); x.scale(dpr, dpr);
+      const fx = f => 34 + (W - 48) * Math.log(f / 20) / Math.log(1000);
+      const T = 14, B = 26, dy = db => T + (H - T - B) * (0.5 - db / 30);
+      x.font = '10px "JetBrains Mono", monospace'; x.lineWidth = 1;
+      [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000].forEach(f => {
+        x.strokeStyle = cssVar('--line'); x.beginPath(); x.moveTo(fx(f), T); x.lineTo(fx(f), H - B); x.stroke();
+        x.fillStyle = cssVar('--muted'); x.textAlign = 'center'; x.fillText(fmtHz(f), fx(f), H - 9);
+      });
+      x.textAlign = 'right'; [12, 0, -12].forEach(db => x.fillText((db > 0 ? '+' : '') + db, 26, dy(db) + 3));
+      const freqs = Float32Array.from({ length: 220 }, (_, i) => 20 * Math.pow(1000, i / 219));
+      const curve = (f0, color, dashed, fill) => {
+        const m = peakResp(f0, L.gain, Q(), freqs);
+        x.setLineDash(dashed ? [5, 4] : []); x.strokeStyle = color; x.lineWidth = 2.5; x.beginPath();
+        freqs.forEach((f, i) => x.lineTo(fx(f), dy(20 * Math.log10(m[i])))); x.stroke(); x.setLineDash([]);
+        if (fill) { x.lineTo(fx(20000), dy(0)); x.lineTo(fx(20), dy(0)); x.closePath(); x.globalAlpha = .18; x.fillStyle = color; x.fill(); x.globalAlpha = 1; }
+      };
+      if (!answered) {
+        x.strokeStyle = cssVar('--violet'); x.lineWidth = 2.5; x.beginPath(); x.moveTo(fx(20), dy(0)); x.lineTo(fx(20000), dy(0)); x.stroke();
+        x.fillStyle = cssVar('--violet'); L.bands.forEach(f => { x.beginPath(); x.arc(fx(f), dy(0), 3.5, 0, 7); x.fill(); });
+        x.font = '40px Bungee, "Arial Black", sans-serif'; x.textAlign = 'center'; x.globalAlpha = eqOn ? .9 : .3;
+        x.fillText('?', W / 2, L.gain > 0 ? dy(0) - 18 : dy(0) + 50); x.globalAlpha = 1;
+      } else {
+        const tf = L.bands[target];
+        if (curF !== tf) curve(curF, cssVar('--muted'), true, false);
+        curve(tf, cssVar(results[results.length - 1] ? '--teal' : '--coral'), false, true);
+      }
+    }
+    function newTarget() {
+      let t; do t = Math.floor(Math.random() * L.bands.length); while (t === prev);
+      prev = target = t; curF = L.bands[t]; answered = false; guess = null; fb.hidden = true; setEq(true);
+    }
+    function answer(i) {
+      if (answered) return;
+      answered = true; guess = i; const ok = i === target; results.push(ok); if (M) sc.record(ok);
+      if (ok) { streak++; best = Math.max(best, streak); score += 100 + 25 * (streak - 1); sfx.ok(); } else { streak = 0; sfx.bad(); }
+      curF = L.bands[target]; setEq(true); renderHud(); renderAnswers(); showFeedback(ok);
+    }
+    function showFeedback(ok) {
+      const f = L.bands[target], last = M ? sc.done : r === ROUNDS - 1;
+      fb.className = 'feedback ' + (ok ? 'ok' : 'bad'); fb.hidden = false;
+      fb.replaceChildren(
+        h('h3', {}, ok ? (streak > 2 ? `Correct! ${streak} in a row` : 'Correct!') : `It was ${hzLabel(f)}`),
+        h('p', { html: `<b>${hzLabel(f)}:</b> ${EQ_INFO[f][1]}` }),
+        h('div', { class: 'row' },
+          h('button', { class: 'btn primary', type: 'button', onclick: nextRound }, last ? 'See results' : 'Next round', h('kbd', {}, 'Enter')),
+          h('button', { class: 'btn', type: 'button', onclick: () => audition(f) }, '▶ Hear ' + hzLabel(f)),
+          !ok && h('button', { class: 'btn', type: 'button', onclick: () => audition(L.bands[guess]) }, '▶ Hear your pick (' + hzLabel(L.bands[guess]) + ')')));
+    }
+    function nextRound() {
+      if (!answered) return;
+      if (M) {
+        if (sc.done) { done(sc); return; }
+        L = self.mastery.steps[sc.idx]; r++; renderBrief(); newTarget(); renderHud(); renderAnswers(); return;
+      }
+      if (r === ROUNDS - 1) {
+        const c = results.filter(Boolean).length, stars = c >= 8 ? 3 : c >= 6 ? 2 : c >= 4 ? 1 : 0;
+        done(stars, null, `${c} of ${ROUNDS} correct · best streak ${best} · ${score} pts.` + (stars ? '' : ' Get 4 right to clear the level.'));
+        return;
+      }
+      r++; newTarget(); renderHud(); renderAnswers();
+    }
+    const onResize = () => draw();
+    window.addEventListener('resize', onResize);
+    renderBrief(); renderSrc(); newTarget(); renderHud(); renderAnswers();
+    if (document.fonts) document.fonts.ready.then(draw);
+    return {
+      unmount() { window.removeEventListener('resize', onResize); },
+      key(e) {
+        if (e.key === ' ') { playing ? stopAll() : start(); return true; }
+        if (e.key === 'b' || e.key === 'B') { setEq(!eqOn); return true; }
+        if (e.key === 'Enter' && answered) { nextRound(); return true; }
+        const n = parseInt(e.key, 10); if (n >= 1 && n <= Math.min(9, L.bands.length)) { answer(n - 1); return true; }
+      },
+    };
+  },
+});
+
+/* ================= GAME 2: Beat Copy (drum programming) ================= */
+const DRUM_ROWS = { kick: ['Kick', 'var(--amber)'], snare: ['Snare', 'var(--coral)'], clap: ['Clap', 'var(--pink)'], hat: ['Closed hat', 'var(--teal)'], ohat: ['Open hat', 'var(--sky)'] };
+const EIGHTHS = [0, 2, 4, 6, 8, 10, 12, 14];
+GAMES.push({
+  id: 'beat', name: 'Beat Copy', skill: 'Rhythm · Drum programming', hue: 'var(--amber)',
+  blurb: 'Hear a groove from a real genre, then program it on the 16-step grid until it matches.',
+  levels: [
+    { name: 'Four on the Floor', desc: 'House · kick and open hat', bpm: 124, rows: { kick: [0, 4, 8, 12], ohat: [2, 6, 10, 14] },
+      tip: 'A kick on every beat with open hats on the off-beats (the "&"s). It drives house, disco and techno.' },
+    { name: 'Rock Backbeat', desc: 'Rock · kick, snare, hats', bpm: 110, rows: { kick: [0, 8, 10], snare: [4, 12], hat: EIGHTHS },
+      tip: 'Snare on beats 2 and 4 is the backbeat. Steady 8th-note hats keep time, and the extra kick on the "&" of 3 pushes the groove forward.' },
+    { name: 'Boom Bap', desc: 'Hip-hop · syncopated kick', bpm: 90, rows: { kick: [0, 7, 10], snare: [4, 12], hat: EIGHTHS },
+      tip: 'Kicks that land off the grid ("a" of 2, "&" of 3) against a hard 2-and-4 snare. That is the 90s hip-hop bounce; producers usually add swing on top.' },
+    { name: 'Trap Half-Time', desc: 'Trap · clap on 3, busy hats', bpm: 140, rows: { kick: [0, 3, 10], clap: [8], hat: [0, 2, 4, 6, 8, 10, 11, 12, 14, 15] },
+      tip: 'The clap lands only on beat 3, so 140 BPM feels like 70. That is half-time. Quick 16th-note hat flicks add the energy.' },
+    { name: 'Dembow', desc: 'Reggaeton · the dembow riddim', bpm: 96, rows: { kick: [0, 4, 8, 12], snare: [3, 6, 11, 14], hat: EIGHTHS },
+      tip: 'Four-on-the-floor kick with snares on the "a" of 1 and the "&" of 2, repeated in the second half. Boom, ch-boom-chick: the pulse of reggaeton.' },
+    { name: 'Amen Break', desc: 'Jungle · the most sampled beat', bpm: 136, rows: { kick: [0, 2, 10, 11], snare: [4, 7, 9, 12, 15], hat: EIGHTHS },
+      tip: 'A one-bar take on the "Amen, Brother" break (The Winstons, 1969), the most sampled drum loop in history and the backbone of jungle and drum & bass.' },
+  ],
+  deco(x, w, hh) { for (let i = 0; i < 16; i++) for (let j = 0; j < 3; j++) if ((i * 7 + j * 5) % 3 === 0) x.fillRect(6 + i * 18.4, 6 + j * 17, 14, 12); },
+  mount(stage, li, done) {
+    const P = this.levels[li], rows = Object.keys(P.rows);
+    const user = Object.fromEntries(rows.map(r => [r, new Set()]));
+    let mode = 'target', playing = false, solo = null, hintUsed = false, checks = 0, revealed = false, status = {}, ph = -1;
+    const cells = {}, soloBtns = {}, stEls = {}, stepLbls = [];
+    const isT = st => mode === 'target' || (mode === 'ab' && st < 16);
+
+    const hud = h('div', { class: 'hud' });
+    const nowLbl = h('span', { class: 'legend', 'aria-live': 'polite' });
+    const play = playBtn('▶ Play', 'Space'); play.onclick = () => playing ? stopAll() : start();
+    const modeSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What to hear' },
+      [['target', 'Target (T)'], ['yours', 'Yours (Y)'], ['ab', 'A/B (A)']].map(([k, l]) => h('button', { type: 'button', 'data-k': k, onclick: () => setMode(k) }, l)));
+    const grid = h('div', { class: 'bgrid' }, h('span', {}));
+    ['1', 'e', '&', 'a', '2', 'e', '&', 'a', '3', 'e', '&', 'a', '4', 'e', '&', 'a'].forEach((c, i) => {
+      const s = h('span', { class: 'stepno' + (i % 4 === 0 ? ' beat' : '') }, c); stepLbls.push(s); grid.append(s);
+    });
+    rows.forEach(r => {
+      const [name, col] = DRUM_ROWS[r];
+      soloBtns[r] = h('button', { class: 'solo', type: 'button', 'aria-pressed': 'false', title: 'Hint: hear only this row of the target (caps you at 2 stars)', onclick: () => toggleSolo(r) }, 'SOLO');
+      stEls[r] = h('span', { class: 'rs' });
+      grid.append(h('div', { class: 'rlabel', style: { '--c': col } }, h('span', { class: 'dot' }), name, stEls[r], soloBtns[r]));
+      cells[r] = Array.from({ length: 16 }, (_, i) => {
+        const b = h('button', { class: 'cell' + ((i >> 2) & 1 ? ' q' : ''), type: 'button', style: { '--c': col }, 'aria-label': `${name}, step ${i + 1}`, 'aria-pressed': 'false', onclick: () => toggle(r, i) });
+        grid.append(b); return b;
+      });
+    });
+    const fb = h('div', { class: 'feedback', hidden: true });
+    const checkBtn = h('button', { class: 'btn primary', type: 'button', onclick: check }, 'Check my beat', h('kbd', {}, 'Enter'));
+    stage.append(
+      h('div', { class: 'panel' },
+        h('div', { class: 'panel-head' },
+          h('p', { class: 'brief', html: `<b>${P.name}</b> · ${P.desc}. Listen to the target, then click cells to program it. <b>A/B</b> plays one bar of the target, then one bar of yours.` }), hud),
+        h('div', { class: 'row', style: { 'margin-bottom': '14px' } }, play, modeSeg, nowLbl, h('span', { class: 'spacer' }),
+          h('button', { class: 'btn ghost', type: 'button', onclick: clearGrid }, 'Clear'), checkBtn),
+        h('div', { class: 'gridwrap' }, grid)),
+      fb);
+
+    function start() {
+      const s = newSession(0.7); playing = true; setPlaying(play, true, '▶ Play');
+      s.onStop = () => { playing = false; setPlaying(play, false, '▶ Play'); setPh(-1); nowLbl.textContent = ''; };
+      seqStart({
+        bpm: P.bpm, steps: 32,
+        onStep: (st, t) => { const T = isT(st), b = st % 16; for (const r of rows) if (T ? P.rows[r].includes(b) && (!solo || solo === r) : user[r].has(b)) DRUMS[r](t, s.g, 0.9); },
+        onUI: st => { setPh(st % 16); const T = isT(st); nowLbl.textContent = T ? (solo ? `● Target (${DRUM_ROWS[solo][0]} solo)` : '● Target') : '● Yours'; nowLbl.style.color = T ? 'var(--amber)' : 'var(--teal)'; },
+      });
+    }
+    function setPh(i) {
+      if (ph >= 0) { rows.forEach(r => cells[r][ph].classList.remove('ph')); stepLbls[ph].classList.remove('now'); }
+      ph = i; if (i < 0) return;
+      rows.forEach(r => cells[r][i].classList.add('ph')); stepLbls[i].classList.add('now');
+    }
+    function setMode(k, auto = true) { mode = k; modeSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k))); if (auto && !playing) start(); }
+    function toggle(r, i) {
+      const s = user[r]; s.has(i) ? s.delete(i) : s.add(i);
+      const on = s.has(i); cells[r][i].classList.toggle('on', on); cells[r][i].setAttribute('aria-pressed', String(on));
+      if (on && !playing) { ac(); DRUMS[r](A.ctx.currentTime + 0.01, A.out, 0.6); }
+      if (status[r] != null) { delete status[r]; renderStatus(); }
+    }
+    function clearGrid() { rows.forEach(r => { user[r].clear(); cells[r].forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); }); }); status = {}; renderStatus(); }
+    function toggleSolo(r) {
+      solo = solo === r ? null : r; if (solo) hintUsed = true;
+      rows.forEach(x => soloBtns[x].setAttribute('aria-pressed', String(x === solo)));
+      if (solo && mode === 'yours') setMode('target'); else if (solo && !playing) start();
+      renderHud();
+    }
+    const bestPossible = () => revealed ? 1 : Math.min(hintUsed ? 2 : 3, Math.max(1, 3 - checks));
+    function renderHud() {
+      hud.replaceChildren(h('span', {}, 'TEMPO ', h('b', {}, P.bpm), ' BPM'), h('span', {}, 'CHECKS ', h('b', {}, checks)),
+        h('span', { class: 'streak' }, 'BEST POSSIBLE ', h('b', { html: starsHTML(bestPossible()) })));
+    }
+    function renderStatus() {
+      rows.forEach(r => { const n = status[r]; stEls[r].textContent = n == null ? '' : n ? '✗' + n : '✓'; stEls[r].className = 'rs ' + (n == null ? '' : n ? 'bad' : 'ok'); });
+    }
+    function check() {
+      checks++; let off = 0;
+      rows.forEach(r => { const want = new Set(P.rows[r]); let n = 0; for (let i = 0; i < 16; i++) if (want.has(i) !== user[r].has(i)) n++; status[r] = n; off += n; });
+      renderStatus();
+      if (!off) { done(revealed ? 1 : Math.min(hintUsed ? 2 : 3, checks === 1 ? 3 : checks === 2 ? 2 : 1), 'Groove locked in!', `${P.name}, ${P.bpm} BPM. ${P.tip}`); return; }
+      renderHud(); sfx.bad();
+      fb.hidden = false; fb.className = 'feedback bad';
+      fb.replaceChildren(h('h3', {}, `${off} cell${off > 1 ? 's' : ''} off`),
+        h('p', {}, revealed ? 'The dashed outlines show the answer. Match them and check again.' : 'Rows marked ✗ still have mistakes (the number is how many cells are wrong). Use A/B or SOLO to find them, then check again.'),
+        checks >= 3 && !revealed ? h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: reveal }, 'Show me the answer (max 1 star)')) : null);
+    }
+    function reveal() { revealed = true; rows.forEach(r => P.rows[r].forEach(i => cells[r][i].classList.add('reveal'))); renderHud(); fb.querySelector('p').textContent = 'The dashed outlines show the answer. Match them and check again.'; fb.querySelector('.row').remove(); }
+    setMode('target', false); renderHud();
+    return {
+      key(e) {
+        if (e.key === ' ') { playing ? stopAll() : start(); return true; }
+        const m = { t: 'target', y: 'yours', a: 'ab' }[e.key.toLowerCase()]; if (m) { setMode(m); return true; }
+        if (e.key === 'Enter') { check(); return true; }
+      },
+    };
+  },
+});
+
+/* ================= GAME 3: Patch Match (synth sound design) ================= */
+const WAVES = ['sine', 'triangle', 'square', 'sawtooth'];
+const WAVE_NAME = { sine: 'Sine', triangle: 'Triangle', square: 'Square', sawtooth: 'Saw' };
+const WAVE_SIM = { sine: { triangle: .55, square: .15, sawtooth: .1 }, triangle: { sine: .55, square: .3, sawtooth: .2 }, square: { sine: .15, triangle: .3, sawtooth: .45 }, sawtooth: { sine: .1, triangle: .2, square: .45 } };
+const WAVE_PATH = {
+  sine: 'M' + Array.from({ length: 21 }, (_, i) => `${2 + i * 2} ${11 - 8 * Math.sin(i / 20 * Math.PI * 3)}`).join(' L'),
+  triangle: 'M2 11 L7 3 L17 19 L27 3 L37 19 L42 11',
+  square: 'M2 17 V5 H12 V17 H22 V5 H32 V17 H42',
+  sawtooth: 'M2 17 L14 5 V17 L26 5 V17 L38 5 V17',
+};
+const fmtF = v => v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1) + ' kHz' : Math.round(v) + ' Hz';
+const SP = { // knob ranges, target ranges, and scoring: distance in octaves (with a floor offset) divided by tolerance
+  cutoff: { label: 'Cutoff', min: 80, max: 12000, def: 1500, fmt: fmtF, range: [250, 6000], off: 0, tol: 2.5 },
+  res: { label: 'Resonance', min: 0.5, max: 18, def: 1, fmt: v => 'Q ' + v.toFixed(1), range: [0.7, 14], off: 0, tol: 3 },
+  attack: { label: 'Attack', min: 0.003, max: 1, def: 0.02, fmt: fmtS, range: [0.004, 0.7], off: 0.01, tol: 3 },
+  release: { label: 'Release', min: 0.02, max: 2, def: 0.25, fmt: fmtS, range: [0.03, 1.5], off: 0.03, tol: 2.5 },
+};
+const PARAM_TIPS = {
+  wave: '<b>Waveform:</b> sine is pure with no harmonics, triangle adds a few soft ones, square sounds hollow and woody (odd harmonics), and saw is bright and buzzy (every harmonic).',
+  cutoff: '<b>Cutoff:</b> a low-pass filter removes everything above this frequency. Lower means darker and more muffled.',
+  res: '<b>Resonance:</b> boosts the frequencies right at the cutoff, adding a whistling, nasal peak.',
+  attack: '<b>Attack:</b> how long each note takes to fade in. Short is plucky and percussive; long swells like a pad.',
+  release: '<b>Release:</b> how long a note rings out after it ends. Short is tight and staccato; long leaves smooth tails.',
+};
+const logRand = ([a, b]) => a * Math.pow(b / a, Math.random());
+function paramScore(k, a, b) {
+  if (k === 'wave') return a === b ? 1 : WAVE_SIM[a][b];
+  const s = SP[k]; return clamp(1 - Math.abs(Math.log2((a + s.off) / (b + s.off))) / s.tol);
+}
+
+GAMES.push({
+  id: 'synth', name: 'Patch Match', skill: 'Sound design · Synthesis', hue: 'var(--teal)',
+  blurb: 'A mystery synth patch plays. Pick the waveform and turn the knobs until your sound matches it.',
+  levels: [
+    { name: 'Waveforms', desc: 'Name the oscillator shape', params: ['wave'], fixed: { wave: 'sine', cutoff: 12000, res: 0.7, attack: 0.008, release: 0.2 } },
+    { name: 'Filter Sweep', desc: 'Waveform and filter cutoff', params: ['wave', 'cutoff'], fixed: { wave: 'sine', cutoff: 12000, res: 0.7, attack: 0.008, release: 0.2 } },
+    { name: 'Envelopes', desc: 'Attack and release on a saw', params: ['attack', 'release'], fixed: { wave: 'sawtooth', cutoff: 2600, res: 1, attack: 0.01, release: 0.2 } },
+    { name: 'Full Patch', desc: 'Wave, cutoff, attack, release', params: ['wave', 'cutoff', 'attack', 'release'], fixed: { wave: 'sine', cutoff: 2000, res: 1, attack: 0.01, release: 0.2 } },
+    { name: 'Resonance', desc: 'Everything, plus filter resonance', params: ['wave', 'cutoff', 'res', 'attack', 'release'], fixed: { wave: 'sine', cutoff: 2000, res: 1, attack: 0.01, release: 0.2 } },
+  ],
+  deco(x, w, hh) { x.beginPath(); for (let i = 0; i <= w; i++) x.lineTo(i, hh / 2 + 18 * (((i / 40) % 1) * 2 - 1)); x.stroke(); },
+  mount(stage, li, done) {
+    const L = this.levels[li], ROUNDS = 3, NOTES = [48, 55, 60, 63];
+    let r = 0, scores = [], target = null, lastWave = null, myWave = null, mode = 'target', playing = false, submitted = false, raf = 0, scopeCol = '--amber';
+    const isT = st => mode === 'target' || (mode === 'ab' && st < 32);
+
+    const hud = h('div', { class: 'hud' });
+    const cv = h('canvas', { class: 'scope', role: 'img', 'aria-label': 'Oscilloscope' });
+    const nowLbl = h('span', { class: 'legend', 'aria-live': 'polite' });
+    const play = playBtn('▶ Play', 'Space'); play.onclick = () => playing ? stopAll() : start();
+    const modeSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'What to hear' },
+      [['target', 'Target (T)'], ['yours', 'Yours (Y)'], ['ab', 'A/B (A)']].map(([k, l]) => h('button', { type: 'button', 'data-k': k, onclick: () => setMode(k) }, l)));
+    const waveBtns = WAVES.map((w, i) => h('button', { class: 'wave', type: 'button', 'aria-pressed': 'false', onclick: () => setWave(w), html: `<svg viewBox="0 0 44 22" aria-hidden="true"><path d="${WAVE_PATH[w]}" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round"/></svg>${WAVE_NAME[w]} <span class="key">${i + 1}</span>` }));
+    const knobs = {};
+    for (const k of ['cutoff', 'res', 'attack', 'release']) {
+      const s = SP[k]; knobs[k] = knob({ label: s.label, min: s.min, max: s.max, value: s.def, def: s.def, log: true, fmt: s.fmt, locked: !L.params.includes(k) });
+    }
+    const submitBtn = h('button', { class: 'btn primary', type: 'button', onclick: submit }, 'Lock it in', h('kbd', {}, 'Enter'));
+    const fb = h('div', { class: 'feedback', hidden: true });
+    stage.append(
+      h('div', { class: 'panel' }, h('div', { class: 'panel-head', style: { 'margin-bottom': '0' } },
+        h('p', { class: 'brief', html: `<b>${L.desc}.</b> Greyed-out controls are already set for you. Loop the target, then shape <b>your</b> sound until they match. Drag knobs up and down; double-click resets one.` }), hud)),
+      h('div', { class: 'synth' },
+        h('div', { class: 'panel', style: { display: 'grid', gap: '12px', 'align-content': 'start' } },
+          h('div', { class: 'panel-head', style: { 'margin-bottom': '0' } }, h('span', { class: 'eyebrow' }, 'Scope'), nowLbl), cv,
+          h('div', { class: 'row' }, play, modeSeg)),
+        h('div', { class: 'panel', style: { display: 'grid', gap: '12px' } },
+          h('span', { class: 'eyebrow' }, 'Oscillator'), h('div', { class: 'waves' }, waveBtns),
+          h('span', { class: 'eyebrow' }, 'Filter + amp envelope'), h('div', { class: 'knobs' }, Object.values(knobs).map(k => k.el)),
+          h('div', { class: 'row' }, h('span', { class: 'spacer' }), submitBtn))),
+      fb);
+
+    const mine = () => { const p = { ...target }; if (L.params.includes('wave')) p.wave = myWave || 'sine'; for (const k in knobs) if (L.params.includes(k)) p[k] = knobs[k].value; return p; };
+    function start() {
+      const s = newSession(0.8); playing = true; setPlaying(play, true, '▶ Play');
+      s.onStop = () => { playing = false; setPlaying(play, false, '▶ Play'); nowLbl.textContent = ''; };
+      seqStart({
+        bpm: 120, steps: 64,
+        onStep: (st, t) => { if (st % 8 === 0) synth(isT(st) ? target : mine(), t, 0.75, mtof(NOTES[(st >> 3) % 4]), s.g, 0.28); },
+        onUI: st => { if (st % 8) return; const T = isT(st); nowLbl.textContent = T ? '● Target' : '● Yours'; scopeCol = T ? '--amber' : '--teal'; nowLbl.style.color = T ? 'var(--amber)' : 'var(--teal)'; },
+      });
+    }
+    function setMode(k, auto = true) { mode = k; modeSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k))); if (auto && !playing) start(); }
+    function setWave(w) {
+      if (!L.params.includes('wave') || submitted) return;
+      myWave = w; waveBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(WAVES[i] === w)));
+      if (!playing) { ac(); synth(mine(), A.ctx.currentTime + 0.02, 0.35, mtof(48), A.out, 0.22); }
+      submitBtn.disabled = false;
+    }
+    function lockControls(b) {
+      waveBtns.forEach(x => x.disabled = b || !L.params.includes('wave'));
+      for (const k in knobs) knobs[k].setLocked(b || !L.params.includes(k));
+    }
+    function newRound() {
+      target = { ...L.fixed };
+      if (L.params.includes('wave')) { target.wave = pick(WAVES.filter(w => w !== lastWave)); lastWave = target.wave; }
+      for (const k in SP) if (L.params.includes(k)) target[k] = logRand(SP[k].range);
+      submitted = false; fb.hidden = true;
+      myWave = L.params.includes('wave') ? null : target.wave;
+      waveBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(WAVES[i] === myWave)));
+      for (const k in knobs) knobs[k].setValue(L.params.includes(k) ? SP[k].def : target[k]);
+      lockControls(false); submitBtn.disabled = L.params.includes('wave'); renderHud();
+    }
+    function renderHud() {
+      const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 100) + '%' : '—';
+      hud.replaceChildren(h('span', {}, 'PATCH ', h('b', {}, `${r + 1}/${ROUNDS}`)), progressBar(scores.map(s => s >= .75), ROUNDS), h('span', {}, 'AVG MATCH ', h('b', {}, avg)));
+    }
+    function submit() {
+      if (submitted || submitBtn.disabled) return;
+      submitted = true; lockControls(true);
+      const me = mine(), parts = L.params.map(k => [k, paramScore(k, me[k], target[k])]);
+      const pct = parts.reduce((a, [, s]) => a + s, 0) / parts.length;
+      scores.push(pct); renderHud(); pct >= .75 ? sfx.ok() : sfx.bad();
+      const show = (k, v) => k === 'wave' ? WAVE_NAME[v] : SP[k].fmt(v);
+      const last = r === ROUNDS - 1;
+      fb.hidden = false; fb.className = 'feedback ' + (pct >= .6 ? 'ok' : 'bad');
+      fb.replaceChildren(
+        h('div', { class: 'row', style: { gap: '18px', 'align-items': 'flex-end' } },
+          h('span', { class: 'bigpct', style: { color: pct >= .6 ? 'var(--teal)' : 'var(--coral)' } }, Math.round(pct * 100) + '%'),
+          h('h3', {}, pct >= .9 ? 'Dead on!' : pct >= .75 ? 'Very close' : pct >= .6 ? 'In the ballpark' : 'Not quite there')),
+        h('div', { class: 'matchbars' }, parts.map(([k, s]) => h('div', { class: 'mb' },
+          h('span', {}, k === 'wave' ? 'Waveform' : SP[k].label),
+          h('span', { class: 'bar' }, h('i', { style: { width: Math.round(s * 100) + '%', background: s >= .75 ? 'var(--teal)' : s >= .5 ? 'var(--amber)' : 'var(--coral)' } })),
+          h('span', { class: 'mono' }, Math.round(s * 100) + '%'),
+          h('span', { class: 'vals' }, `target ${show(k, target[k])} · yours ${show(k, me[k])}`)))),
+        h('p', { html: L.params.map(k => PARAM_TIPS[k]).join(' ') }),
+        h('div', { class: 'row' },
+          h('button', { class: 'btn primary', type: 'button', onclick: next }, last ? 'See results' : 'Next patch', h('kbd', {}, 'Enter')),
+          h('button', { class: 'btn', type: 'button', onclick: () => setMode('ab') }, '▶ A/B compare')));
+      fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function next() {
+      if (r === ROUNDS - 1) {
+        const avg = scores.reduce((a, b) => a + b, 0) / ROUNDS, stars = avg >= .88 ? 3 : avg >= .75 ? 2 : avg >= .6 ? 1 : 0;
+        done(stars, null, `Average match ${Math.round(avg * 100)}% across ${ROUNDS} patches.` + (stars ? '' : ' Reach 60% to clear the level.'));
+        return;
+      }
+      r++; stopAll(); newRound();
+    }
+    function drawScope() {
+      raf = requestAnimationFrame(drawScope);
+      const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
+      if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, W, H);
+      x.strokeStyle = cssVar('--line'); x.lineWidth = 1; x.beginPath(); x.moveTo(0, H / 2); x.lineTo(W, H / 2); x.stroke();
+      if (!playing || !A.an) return;
+      const buf = new Float32Array(A.an.fftSize); A.an.getFloatTimeDomainData(buf);
+      let s0 = 0; for (let i = 1; i < buf.length / 2; i++) if (buf[i - 1] < 0 && buf[i] >= 0) { s0 = i; break; }
+      const N = 900; let pk = 0.04; for (let i = 0; i < N; i++) pk = Math.max(pk, Math.abs(buf[s0 + i]));
+      x.strokeStyle = cssVar(scopeCol); x.lineWidth = 2; x.beginPath();
+      for (let i = 0; i < N; i++) x.lineTo(i / (N - 1) * W, H / 2 - buf[s0 + i] / pk * H * 0.4);
+      x.stroke();
+    }
+    setMode('target', false); newRound(); drawScope();
+    return {
+      unmount() { cancelAnimationFrame(raf); },
+      key(e) {
+        if (e.key === ' ') { playing ? stopAll() : start(); return true; }
+        const m = { t: 'target', y: 'yours', a: 'ab' }[e.key.toLowerCase()]; if (m) { setMode(m); return true; }
+        if (e.key === 'Enter') { submitted ? next() : submit(); return true; }
+        const n = parseInt(e.key, 10); if (n >= 1 && n <= 4) { setWave(WAVES[n - 1]); return true; }
+      },
+    };
+  },
+});
+
+/* ================= GAME 4: Mix Doctor (levels & panning) ================= */
+const REF_MIX = { drums: { db: 0, pan: 0 }, bass: { db: 0, pan: 0 }, keys: { db: 0, pan: -0.3 }, lead: { db: 0, pan: 0.25 } };
+const PROB = {
+  loud: { icon: '↑', col: '↑ Too loud', fb: (t, a) => `${t} was ${a} dB too loud` },
+  quiet: { icon: '↓', col: '↓ Too quiet', fb: (t, a) => `${t} was ${a} dB too quiet` },
+  left: { icon: '◀', col: '◀ Hard left', fb: t => `${t} was panned hard left` },
+  right: { icon: '▶', col: 'Hard right ▶', fb: t => `${t} was panned hard right` },
+};
+const MIX_TIPS = {
+  loud: { drums: 'Over-loud drums make a track feel aggressive and push the music around them into the background.', bass: 'Too much bass makes the mix boomy and heavy, and it eats headroom fast.', keys: 'Loud keys clog the midrange and bury the lead.', lead: 'An over-loud lead sits on top of the mix instead of inside it, like a karaoke track.' },
+  quiet: { drums: 'Quiet drums drain the energy; the groove loses its punch.', bass: 'Without enough bass the mix sounds thin, especially on good speakers.', keys: 'Quiet keys leave a hole in the middle, and the harmony disappears.', lead: 'A buried lead loses the hook, the part listeners actually remember.' },
+  pan: { drums: 'Kick and snare usually stay centered so the groove hits both speakers equally.', bass: 'Low end almost always stays centered. It carries the most energy, and panning it tilts the whole mix.', keys: 'Chords can sit off-center, but hard-panning one part alone unbalances the stereo image. Producers often double them left and right instead.', lead: 'The lead is the focus of the song and normally sits in the center, like a lead vocal.' },
+};
+const dbToY = db => clamp((db + 18) / 30) * 100; // fader travel: −18 dB … +12 dB
+
+GAMES.push({
+  id: 'mix', name: 'Mix Doctor', skill: 'Mixing · Balance & panning', hue: 'var(--coral)',
+  blurb: 'Something is wrong with this mix. Compare it to the reference and find the faulty track.',
+  levels: [
+    { name: 'Too Loud', desc: 'One track is 10 dB too loud', probs: ['loud'], amt: 10, ref: true },
+    { name: 'Too Quiet', desc: 'One track is 12 dB too quiet', probs: ['quiet'], amt: 12, ref: true },
+    { name: 'Up or Down', desc: 'One track is 6 dB off, either way', probs: ['loud', 'quiet'], amt: 6, ref: true },
+    { name: 'Stereo Image', desc: 'One track is panned hard left or right', probs: ['left', 'right'], amt: 0, ref: true },
+    { name: 'Blind Mix', desc: 'Any of the above, no reference', probs: ['loud', 'quiet', 'left', 'right'], amt: 6, ref: false },
+  ],
+  mastery: {
+    unit: 'Level rating', start: 1,
+    steps: [12, 9, 6, 4.5, 3, 2, 1.5, 1].map(d => ({ probs: ['loud', 'quiet'], amt: d, ref: true, desc: `${d} dB changes` })),
+  },
+  deco(x, w, hh) { [0.6, 0.3, 0.75, 0.45, 0.2, 0.55, 0.8, 0.35, 0.5, 0.65, 0.25, 0.7, 0.4, 0.6].forEach((v, i) => x.fillRect(10 + i * 21, hh - v * hh, 12, v * hh)); },
+  mount(stage, li, done) {
+    const self = this, M = li === 'M', ROUNDS = 6, sc = M ? staircase(this.mastery.steps.length, this.mastery.start) : null;
+    let L = M ? this.mastery.steps[sc.idx] : this.levels[li];
+    const single = L.probs.length === 1; // every Mastery step uses the same answer grid
+    let r = 0, results = [], prob = null, last = '', answered = false, guess = null, listen = 'problem', playing = false, m = null, streak = 0;
+    const tname = id => TRACKS.find(t => t.id === id).name;
+    const mixFor = which => {
+      const mx = JSON.parse(JSON.stringify(REF_MIX));
+      if (which === 'problem') { const t = mx[prob.track]; if (prob.kind === 'loud') t.db = L.amt; else if (prob.kind === 'quiet') t.db = -L.amt; else t.pan = prob.kind === 'left' ? -1 : 1; }
+      return mx;
+    };
+
+    const hud = h('div', { class: 'hud' });
+    const play = playBtn('▶ Play', 'Space'); play.onclick = () => playing ? stopAll() : start();
+    const listenSeg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Which mix to hear' },
+      [['problem', 'Problem mix'], ['ref', 'Reference (R)']].map(([k, l]) => h('button', { type: 'button', 'data-k': k, onclick: () => setListen(k) }, l)));
+    const strips = {};
+    const mixer = h('div', { class: 'mixer' }, TRACKS.map(t => {
+      const cap = h('span', { class: 'cap' }), panI = h('i'), db = h('span', { class: 'db' });
+      const el = h('div', { class: 'strip', style: { '--c': t.c } }, h('span', { class: 'nm' }, t.name), h('span', { class: 'panmeter', title: 'Pan' }, panI),
+        h('span', { class: 'fader' }, h('span', { class: 'ref', style: { bottom: dbToY(0) + '%' } }), cap), db);
+      strips[t.id] = { el, cap, panI, db }; return el;
+    }));
+    const mixerLbl = h('span', { class: 'eyebrow' });
+    const answers = h('div');
+    const fb = h('div', { class: 'feedback', hidden: true });
+    const brief = h('p', { class: 'brief' });
+    const renderBrief = () => brief.innerHTML = (M ? `<b>Mastery · one track is ${L.amt} dB too loud or too quiet.</b> Two right in a row makes the change smaller; a miss makes it bigger. `
+      : `<b>${L.desc}.</b> `) + (L.ref ? 'Switch between the <b>problem mix</b> and the <b>reference</b> while it plays, then diagnose the fault.' : 'No reference this time. Trust your ears: what sounds out of balance?');
+    stage.append(
+      h('div', { class: 'panel' },
+        h('div', { class: 'panel-head' }, brief, hud),
+        h('div', { class: 'row' }, play, L.ref ? listenSeg : null)),
+      h('div', { class: 'synth' },
+        h('div', { class: 'panel', style: { display: 'grid', gap: '12px', 'align-content': 'start' } }, mixerLbl, mixer),
+        h('div', { class: 'panel', style: { display: 'grid', gap: '12px', 'align-content': 'start' } }, h('span', { class: 'eyebrow' }, single ? 'Which track?' : 'What is wrong?'), answers)),
+      fb);
+
+    function start() {
+      const s = newSession(0.42); playing = true; setPlaying(play, true, '▶ Play');
+      s.onStop = () => { playing = false; m = null; setPlaying(play, false, '▶ Play'); };
+      m = playSong(s.g, mixFor(listen));
+    }
+    function setListen(k, auto = true) {
+      listen = k; listenSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
+      if (m) { const mx = mixFor(k), t = A.ctx.currentTime; for (const id in m) { m[id].gain.setTargetAtTime(Math.pow(10, mx[id].db / 20), t, 0.03); m[id]._pan.pan.setTargetAtTime(mx[id].pan, t, 0.03); } }
+      else if (auto && !playing) start();
+      renderMixer();
+    }
+    function renderMixer() {
+      const show = answered ? mixFor(listen) : REF_MIX;
+      mixerLbl.textContent = answered ? (listen === 'ref' ? 'Mixer · reference (fixed)' : 'Mixer · problem revealed') : 'Mixer · how the reference is set';
+      TRACKS.forEach(t => {
+        const S = strips[t.id], v = show[t.id], bad = answered && t.id === prob.track && listen === 'problem';
+        S.el.classList.toggle('bad', bad); S.cap.style.bottom = dbToY(v.db) + '%'; S.panI.style.left = (50 + v.pan * 50) + '%';
+        S.db.textContent = (v.db > 0 ? '+' : '') + v.db + ' dB' + (v.pan ? ` · ${v.pan < 0 ? 'L' : 'R'}${Math.round(Math.abs(v.pan) * 100)}` : ' · C');
+      });
+    }
+    function renderAnswers() {
+      const btn = (id, k, label) => {
+        const b = h('button', { class: 'ans', type: 'button', 'aria-label': `${tname(id)}: ${PROB[k].col.replace(/[↑↓◀▶]/g, '').trim()}`, onclick: () => answer(id, k) }, label);
+        if (answered) { b.disabled = true; if (id === prob.track && k === prob.kind) b.classList.add('correct'); else if (guess && id === guess[0] && k === guess[1]) b.classList.add('wrong'); }
+        return b;
+      };
+      if (single) answers.replaceChildren(h('div', { class: 'answers' }, TRACKS.map((t, i) => btn(t.id, L.probs[0], [h('span', { class: 'hz', style: { color: t.c } }, t.name), h('span', { class: 'key' }, String(i + 1))]))));
+      else answers.replaceChildren(h('div', { class: 'mixans' },
+        h('div', { class: 'mr', style: { '--cols': L.probs.length } }, h('span'), L.probs.map(k => h('span', { class: 'colh' }, PROB[k].col))),
+        TRACKS.map(t => h('div', { class: 'mr', style: { '--cols': L.probs.length } }, h('span', { style: { '--c': t.c } }, t.name), L.probs.map(k => btn(t.id, k, PROB[k].icon))))));
+    }
+    function renderHud() { if (M) { hud.replaceChildren(...masteryHud(sc), h('span', { class: 'streak' }, 'STREAK ', h('b', {}, '×' + streak))); return; } hud.replaceChildren(h('span', {}, 'ROUND ', h('b', {}, `${r + 1}/${ROUNDS}`)), progressBar(results, ROUNDS), h('span', { class: 'streak' }, 'STREAK ', h('b', {}, '×' + streak))); }
+    function newRound() {
+      let p; do p = { track: pick(TRACKS).id, kind: pick(L.probs) }; while (p.track + p.kind === last); last = p.track + p.kind;
+      prob = p; answered = false; guess = null; fb.hidden = true;
+      setListen('problem', false);
+      renderMixer(); renderAnswers(); renderHud();
+    }
+    function answer(id, k) {
+      if (answered) return;
+      answered = true; guess = [id, k]; const ok = id === prob.track && k === prob.kind;
+      results.push(ok); if (M) sc.record(ok); streak = ok ? streak + 1 : 0; ok ? sfx.ok() : sfx.bad();
+      renderMixer(); renderAnswers(); renderHud();
+      const tip = MIX_TIPS[prob.kind === 'left' || prob.kind === 'right' ? 'pan' : prob.kind][prob.track];
+      fb.hidden = false; fb.className = 'feedback ' + (ok ? 'ok' : 'bad');
+      fb.replaceChildren(
+        h('h3', {}, ok ? 'Good diagnosis!' : 'Missed it'),
+        h('p', { html: `<b>${PROB[prob.kind].fb(tname(prob.track), L.amt)}.</b> ${tip}` }),
+        h('div', { class: 'row' },
+          h('button', { class: 'btn primary', type: 'button', onclick: next }, (M ? sc.done : r === ROUNDS - 1) ? 'See results' : 'Next mix', h('kbd', {}, 'Enter')),
+          h('button', { class: 'btn', type: 'button', onclick: () => setListen('ref') }, '▶ Hear it fixed'),
+          h('button', { class: 'btn', type: 'button', onclick: () => setListen('problem') }, '▶ Hear the problem')));
+    }
+    function next() {
+      if (!answered) return;
+      if (M) {
+        if (sc.done) { done(sc); return; }
+        L = self.mastery.steps[sc.idx]; r++; renderBrief(); newRound(); return;
+      }
+      if (r === ROUNDS - 1) {
+        const c = results.filter(Boolean).length, stars = c >= 6 ? 3 : c >= 5 ? 2 : c >= 4 ? 1 : 0;
+        done(stars, null, `${c} of ${ROUNDS} mixes diagnosed correctly.` + (stars ? '' : ' Get 4 right to clear the level.'));
+        return;
+      }
+      r++; newRound();
+    }
+    renderBrief(); newRound();
+    return {
+      key(e) {
+        if (e.key === ' ') { playing ? stopAll() : start(); return true; }
+        if ((e.key === 'r' || e.key === 'R') && (L.ref || answered)) { setListen(listen === 'ref' ? 'problem' : 'ref'); return true; }
+        if (e.key === 'Enter' && answered) { next(); return true; }
+        const n = parseInt(e.key, 10); if (single && n >= 1 && n <= 4) { answer(TRACKS[n - 1].id, L.probs[0]); return true; }
+      },
+    };
+  },
+});
+
+/* ================= save codes: move progress between devices without a server =================
+   Format: SA1-<base64url of compact JSON>.<4-char checksum>. "SA1" = Studio Arcade, format version 1. */
+const checksum = str => { let x = 0x811c9dc5; for (let i = 0; i < str.length; i++) { x ^= str.charCodeAt(i); x = Math.imul(x, 0x01000193); } return (x >>> 0).toString(36).slice(-4).padStart(4, '0'); }; // FNV-1a
+function makeSaveCode() {
+  const m = {}; for (const id in save.mastery) m[id] = save.mastery[id].best;
+  const body = btoa(JSON.stringify({ s: save.stars, m })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `SA1-${body}.${checksum(body)}`;
+}
+function loadSaveCode(code) {
+  const mm = /^SA1-([A-Za-z0-9_-]+)\.([0-9a-z]{4})$/.exec(code.replace(/\s+/g, ''));
+  if (!mm && !/^SA1-/.test(code.trim())) throw new Error('That is not a Studio Arcade save code. Codes start with SA1-.');
+  let data = null;
+  if (mm && checksum(mm[1]) === mm[2]) try { data = JSON.parse(atob(mm[1].replace(/-/g, '+').replace(/_/g, '/'))); } catch (e) {}
+  if (!data || typeof data !== 'object') throw new Error('This code is damaged or incomplete. Copy the whole code again and paste it here.');
+  let changed = 0;
+  for (const [k, v] of Object.entries(data.s || {})) if (/^[a-z]+-\d+$/.test(k) && Number.isInteger(v) && v >= 1 && v <= 3 && v > (save.stars[k] || 0)) { save.stars[k] = v; changed++; }
+  for (const [id, b] of Object.entries(data.m || {})) if (/^[a-z]+$/.test(id) && typeof b === 'number' && b > masteryBest(id)) { save.mastery[id] = { best: b, runs: (save.mastery[id] && save.mastery[id].runs) || [] }; changed++; }
+  persist(); return changed;
+}
+$('#saveBtn').addEventListener('click', e => {
+  const box = $('#saveBox'); box.hidden = !box.hidden; e.target.setAttribute('aria-expanded', String(!box.hidden));
+  if (!box.hidden) { $('#myCode').value = makeSaveCode(); $('#copyMsg').textContent = ''; $('#loadMsg').textContent = ''; }
+});
+$('#copyCode').addEventListener('click', () => {
+  const t = $('#myCode'), msg = $('#copyMsg');
+  const fallback = () => { t.focus(); t.select(); msg.textContent = 'Selected. Press Ctrl+C (⌘C on Mac) to copy.'; };
+  try { navigator.clipboard.writeText(t.value).then(() => { msg.textContent = 'Copied. Keep it somewhere safe.'; }, fallback); } catch (err) { fallback(); }
+});
+$('#loadCode').addEventListener('click', () => {
+  const msg = $('#loadMsg');
+  try {
+    const n = loadSaveCode($('#inCode').value);
+    msg.style.color = 'var(--teal)';
+    msg.textContent = n ? `Loaded. ${n} result${n === 1 ? '' : 's'} improved on this device.` : 'Valid code, but this device already has the same or better progress.';
+    $('#myCode').value = makeSaveCode(); renderHub();
+  } catch (err) { msg.style.color = 'var(--coral)'; msg.textContent = err.message; }
+});
+
+/* ================= boot & global wiring ================= */
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!$('#modal').hidden) { if (e.key === 'Escape') closeModal(); return; }
+  if (!cur || !cur.api || !cur.api.key) return;
+  const tg = e.target;
+  if (tg.closest && tg.closest('input, select, textarea, [role="slider"]')) return;
+  if (e.key === 'Enter' && tg.tagName === 'BUTTON') return; // the focused button handles Enter itself
+  if (cur.api.key(e)) e.preventDefault();
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopAll(); });
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+$('#home').addEventListener('click', goHub);
+$('#backBtn').addEventListener('click', goHub);
+let resetArmed = 0;
+$('#resetBtn').addEventListener('click', e => {
+  if (Date.now() - resetArmed < 4000) { save = { stars: {}, mastery: {} }; persist(); resetArmed = 0; e.target.textContent = 'Progress reset'; renderHub(); return; }
+  resetArmed = Date.now(); e.target.textContent = 'Click again to erase all stars';
+  setTimeout(() => { if (Date.now() - resetArmed >= 4000) e.target.textContent = 'Reset progress'; }, 4100);
+});
+
+function boot(data) {
+  loadSave(); renderHub();
+  let [want, lv] = data && data.game ? [data.game, data.level] : location.hash.slice(1).split('.');
+  if (lv === 'mastery') lv = 'M';
+  if (!GAMES.some(g => g.id === want)) return;
+  if (lv === 'M') openGame(want, 'M'); // also a shortcut for testing: #eq.mastery opens it even while locked
+  else openGame(want, Number.isInteger(+lv) && lv !== '' && unlocked(want, +lv) ? +lv : undefined);
+}
+try { window.claude?.hot?.snapshot?.(() => ({ game: cur ? cur.game.id : null, level: cur ? cur.level : 0 })); } catch (e) {}
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+</script>
+<style>
+.card { isolation: isolate; grid-template-rows: auto auto 1fr auto auto; }
+.mnote { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; font: 600 11px/1.3 var(--f-mono); color: var(--muted); }
+.mnote .mbtn { position: relative; z-index: 1; min-height: 32px; padding: 4px 10px; font-size: 12px; border-color: var(--hue); color: var(--hue); flex: none; }
+.lvl.mastery { border-style: dashed; }
+.lvl.mastery .n { color: var(--hue, var(--amber)); }
+.lvl .mbest { font: 11px/1.2 var(--f-mono); color: var(--muted); }
+.card canvas { z-index: -1; }
+.card .play::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+.wave .key { font: 10px/1 var(--f-mono); color: var(--muted); }
+.footbtns { display: flex; gap: 16px; }
+.savebox { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 14px; }
+.savecol { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.savebox textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 12px/1.5 var(--f-mono); word-break: break-all; resize: vertical; }
+.savebox textarea::placeholder { color: var(--muted); }
+.mixans .ans { font-size: 16px; }
+</style>
